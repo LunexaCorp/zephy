@@ -1,8 +1,27 @@
-# React + Vite
+# EcoRoute
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este es un proyecto creado con **Vite** y **React** para analizar y mostrar datos ambientales, recomendando rutas frescas y mostrando rankings de contaminación.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Pasos para configurar el proyecto
+
+### 1. Clonar el repositorio
+
+Primero, clona el repositorio a tu máquina local:
+
+```
+git clone https://github.com/yohanvillarp/EcoRoute.git
+```
+
+### 2. Instalar dependencias
+
+```
+npm install
+```
+
+### 3. Ejecutar el servidor de desarrollo
+
+```
+npm run dev
+```
