@@ -1,8 +1,23 @@
-# React + Vite
+# 🌿 EcoRoute
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**EcoRoute** es una plataforma innovadora diseñada para calcular rutas y zonas en donde los usuarios podran realizar diversas actividades sin el temor de los daños que les pueda causar los malos resultados.
 
-Currently, two official plugins are available:
+## 🚀 Tecnologías Principales
+- ⚡ **Vite** - Entorno de desarrollo 
+- ⚛️ **React 19** - Con Hooks y React Router
+- 🎨 **Tailwind CSS** - Diseño responsive y moderno
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📦 Instalación
+
+Sigue estos pasos para configurar el proyecto localmente:
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/LunexaCorp/EcoRoute.git
+   cd EcoRoute
+2. **Instalar modulos**
+   ```bash
+   npm install
+2. **Ejecutar**
+   ```bash
+   npm run dev
