@@ -35,3 +35,6 @@ lerna-debug.log*
 
 # Sistema operativo
 Thumbs.db
+
+# Normaliza los saltos de línea para todos los archivos
+* text=auto eol=lf
