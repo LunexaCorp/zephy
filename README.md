@@ -1,27 +1,23 @@
-# EcoRoute
+# 🌿 EcoRoute
 
-Este es un proyecto creado con **Vite** y **React** para analizar y mostrar datos ambientales, recomendando rutas frescas y mostrando rankings de contaminación.
+**EcoRoute** es una plataforma innovadora diseñada para calcular rutas y zonas en donde los usuarios podran realizar diversas actividades sin el temor de los daños que les pueda causar los malos resultados.
 
----
+## 🚀 Tecnologías Principales
+- ⚡ **Vite** - Entorno de desarrollo 
+- ⚛️ **React 19** - Con Hooks y React Router
+- 🎨 **Tailwind CSS** - Diseño responsive y moderno
 
-## Pasos para configurar el proyecto
+## 📦 Instalación
 
-### 1. Clonar el repositorio
+Sigue estos pasos para configurar el proyecto localmente:
 
-Primero, clona el repositorio a tu máquina local:
-
-```
-git clone https://github.com/yohanvillarp/EcoRoute.git
-```
-
-### 2. Instalar dependencias
-
-```
-npm install
-```
-
-### 3. Ejecutar el servidor de desarrollo
-
-```
-npm run dev
-```
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/LunexaCorp/EcoRoute.git
+   cd EcoRoute
+2. **Instalar modulos**
+   ```bash
+   npm install
+3. **Ejecutar**
+   ```bash
+   npm run dev
