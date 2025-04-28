@@ -18,6 +18,6 @@ Sigue estos pasos para configurar el proyecto localmente:
 2. **Instalar modulos**
    ```bash
    npm install
-2. **Ejecutar**
+3. **Ejecutar**
    ```bash
    npm run dev
