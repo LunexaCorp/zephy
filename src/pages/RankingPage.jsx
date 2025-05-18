@@ -21,12 +21,6 @@ const RankingPage = () => {
       <header className="bg-black px-4 py-5 shadow-lg">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <h1 className="text-white font-bold text-xl">Ranking de Zonas</h1>
-          <button
-            onClick={() => navigate('/')}
-            className="text-emerald-400 hover:text-emerald-300"
-          >
-            Volver al Inicio
-          </button>
         </div>
       </header>
 
