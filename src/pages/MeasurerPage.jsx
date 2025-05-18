@@ -25,12 +25,6 @@ const MeasurerPage = () => {
       <header className="bg-emerald-500 px-4 py-5 shadow-xl">
         <div className=" max-w-6xl mx-auto flex justify-between items-center mb-2">
           <h1 className="text-white text-xl font-bold">EcoRoute</h1>
-          <button
-            onClick={() => navigate('/ranking')}
-            className="bg-emerald-600 text-emerald-200 py-2 px-3 rounded-2xl hover:text-emerald-50 hover:bg-emerald-800 "
-          >
-            Ver Ranking
-          </button>
         </div>
         <div className='max-w-6xl mx-auto'>
           <LocationSelector
