@@ -3,8 +3,8 @@ export const sensorData = {
   alameda: {
     location: "Av. Alameda",
     img: "https://tourinselva.com/wp-content/uploads/2023/08/img_4551-edited.jpg",
-    temperature: 24.5,
-    co2: 412,
+    temperature: 16.5,
+    co2: 270,
     airQuality: 85, // Saludable
     wind: 12
   },
@@ -27,7 +27,7 @@ export const sensorData = {
   velarde: {
     location: "Leon Velarde",
     img: "https://i.ytimg.com/vi/MmgR-19V6Mo/maxresdefault.jpg",
-    temperature: 21.7,
+    temperature: 24.7,
     co2: 320,
     airQuality: 95, // Excelente
     wind: 5
