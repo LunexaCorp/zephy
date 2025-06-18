@@ -1,12 +1,22 @@
 {
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0"
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
-  },
-  "scripts": {
-  "start": "node index.js",
-  "dev": "nodemon index.js"
+    "eslint": "^9.29.0",
+    "nodemon": "^3.1.10",
+    "picocolors": "^1.1.1"
   }
 }
