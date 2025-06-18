@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "nombre": "Sensor de Calidad de Aire MQ135",
+    "tipo": "MQ135",
+    "mediciones": ["calidad_aire"],
+    "comunicacion": "analogico",
+    "ubicacion": null
+  },
+  {
+    "id": 2,
+    "nombre": "Sensor de Temperatura y Humedad DHT11",
+    "tipo": "DHT11",
+    "mediciones": ["temperatura", "humedad"],
+    "comunicacion": "digital",
+    "ubicacion": null
+  },
+  {
+    "id": 3,
+    "nombre": "Módulo Sensor de Sonido KY-037",
+    "tipo": "KY-037",
+    "mediciones": ["nivel_sonido"],
+    "comunicacion": "analogico",
+    "ubicacion": null
+  },
+  {
+    "id": 4,
+    "nombre": "Sensor Ultrasónico HC-SR04",
+    "tipo": "HC-SR04",
+    "mediciones": ["distancia"],
+    "comunicacion": "digital",
+    "ubicacion": null
+  },
+  {
+    "id": 5,
+    "nombre": "Sensor de Iluminación BH1750",
+    "tipo": "BH1750",
+    "mediciones": ["luminosidad"],
+    "comunicacion": "I2C",
+    "ubicacion": null
+  },
+  {
+    "id": 6,
+    "nombre": "Sensor de Reflectancia QTR-1A",
+    "tipo": "QTR-1A",
+    "mediciones": ["reflectancia"],
+    "comunicacion": "analogico",
+    "ubicacion": null
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "alameda",
+    "name": "Av. Alameda",
+    "img" : "https://tourinselva.com/wp-content/uploads/2023/08/img_4551-edited.jpg"
+  },
+  {
+    "id": "plaza",
+    "name": "plaza de armas",
+    "img" : "https://tourinselva.com/wp-content/uploads/2023/04/img_9750-edited-14080196-e1681618860559.jpg"
+  },
+  {
+    "id": "capitania",
+    "name": "Puerto Capitania",
+    "img" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjuP-FeIAGcz9nbXa2uDMB_U9nS8dgUhiVXA&s"
+  },
+  {
+    "id": "velarde",
+    "name": "Leon Velarde",
+    "img" : "https://i.ytimg.com/vi/MmgR-19V6Mo/maxresdefault.jpg"
+  },
+  {
+    "id": "agosto",
+    "name": "15 de agosto",
+    "img" : "https://noticias.madrededios.com/media/madrededios/images/2016/06/15/munitambopata.jpg"
+  }
+]
