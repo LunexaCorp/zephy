@@ -3,7 +3,7 @@ services:
     name: ecoroute-backend
     env: node
     plan: free
-    branch: principal
+    branch: main
     buildCommand: npm install
     startCommand: npm start
     rootDir: backend
