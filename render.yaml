@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ecoroute-backend
+    env: node
+    plan: free
+    branch: principal
+    buildCommand: npm install
+    startCommand: npm start
+    rootDir: backend
