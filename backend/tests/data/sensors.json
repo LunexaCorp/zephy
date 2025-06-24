@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Sensor de Calidad de Aire MQ135",
+    "deviceId": 1,
+    "isConnected": true
+  },
+  {
+    "name": "Sensor de Temperatura y Humedad DHT11",
+    "deviceId": 2,
+    "isConnected": true
+  },
+  {
+    "name": "Módulo Sensor de Sonido KY-037",
+    "deviceId": 3,
+    "isConnected": true
+  }
+]

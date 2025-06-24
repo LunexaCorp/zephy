@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Av. Alameda",
+    "description": "La Av. Alameda es una de las principales arterias de Puerto Maldonado. Bordea la ciudad desde el centro hasta la zona de ingreso al Puente Billinghurst, y en ella se concentran restaurantes, cafés, tiendas y actividades al aire libre. Es popular para caminar al atardecer por su cercanía al río Madre de Dios.",
+    "img": "https://tourinselva.com/wp-content/uploads/2023/08/img_4551-edited.jpg"
+  },
+  {
+    "name": "Plaza de Armas",
+    "description": "La Plaza de Armas de Puerto Maldonado es el corazón cívico de la ciudad. Rodeada de árboles, bancos, una pileta central y la catedral, es un punto de encuentro tanto para locales como visitantes. Desde aquí se accede fácilmente a mercados, comercios y agencias turísticas.",
+    "img": "https://tourinselva.com/wp-content/uploads/2023/04/img_9750-edited-14080196-e1681618860559.jpg"
+  },
+  {
+    "name": "Puerto Capitanía",
+    "description": "Puerto Capitanía es el punto de embarque principal hacia las reservas naturales como Tambopata. Ubicado a orillas del río Madre de Dios, aquí se pueden observar botes turísticos, pescadores locales, y es común ver fauna silvestre cerca del muelle en horas tranquilas.",
+    "img": "https://elcomercio.pe/resizer/KN4Z9cUwJThSKq1Fv7kBKT_FtAw=/800x0/smart/cloudfront-us-east-1.images.arcpublishing.com/elcomercio/2JAWO4RLYZBBXMZJSAD6DLMGMM.jpg"
+  },
+  {
+    "name": "Leon Velarde",
+    "description": "Av. León Velarde es una zona residencial y comercial al norte de Puerto Maldonado. Aquí se encuentran colegios, institutos y diversos negocios locales. Es una vía estratégica que conecta con barrios importantes de la ciudad.",
+    "img": "https://i.ytimg.com/vi/MmgR-19V6Mo/maxresdefault.jpg"
+  },
+  {
+    "name": "Av. 15 de Agosto",
+    "description": "La Av. 15 de Agosto es conocida por su actividad comercial, con ferreterías, mercados y transporte local. Es una de las rutas principales hacia los barrios más poblados y una vía esencial en el crecimiento urbano de la ciudad.",
+    "img": "https://noticias.madrededios.com/media/madrededios/images/2016/06/15/munitambopata.jpg"
+  }
+]
