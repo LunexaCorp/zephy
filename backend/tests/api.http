@@ -1,0 +1,32 @@
+### DISPOSITIVOS
+
+### Recuperar todos los dispositivos
+GET http://localhost:3000/devices
+
+### Recuperar dato sensorial por id
+GET http://localhost:3000/devices/6855fd23198f85cf978ddb34
+
+### UBICACIONES
+
+### Recuperar todos los datos de ubicaciones
+GET http://localhost:3000/locations
+
+### Recuperar dato ubicacion por id
+GET http://localhost:3000/locations/6856007c198f85cf978ddb43
+
+### SENSORES
+
+### Recuperar todos los sensores
+GET http://localhost:3000/sensors
+
+### Recuperar sensor por id
+GET http://localhost:3000/sensors/68560a27198f85cf978ddb4c
+
+### DATOS DE SENSORES
+
+### Recuperar todos los datos de sensores
+GET http://localhost:3000/sensorData
+
+### Recuperar dato sensor por id
+GET http://localhost:3000/sensorData/68560b46198f85cf978ddb52
+

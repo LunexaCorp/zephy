@@ -1,0 +1,26 @@
+[
+  {
+    "name": "sensor001",
+    "type" : "ESP32",
+    "isEnabled": true,
+    "locationId": 1
+  },
+  {
+    "name": "sensor002",
+    "type" : "ESP32",
+    "isEnabled": true,
+    "locationId": 2
+  },
+  {
+    "name": "sensor003",
+    "type" : "ESP32",
+    "isEnabled": true,
+    "locationId": 3
+  },
+  {
+    "name": "sensor004",
+    "type" : "ESP32",
+    "isEnabled": true,
+    "locationId": 4
+  }
+]

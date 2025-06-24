@@ -1,10 +1,19 @@
-const express = require('express');
-const app = express();
-require('dotenv').config();
-require('./config/database');
-const pc = require('picocolors');
-const datosSensoriales = require('./dataTest/dispositivos.json');
+import express, { json } from 'express';
+import dotenv from 'dotenv';
+import './config/database.js';
+import pc from 'picocolors';
+import { connect } from 'mongoose';
+import devicesRoutes from './routes/devicesRoutes.js';
+import locationsRouter from './routes/locationsRouter.js';
+import sensorDataRoutes from './routes/sensorDataRoutes.js';
+import sensorsRouter from './routes/sensorsRouter.js';
+import mqtt from "mqtt"; // import namespace "mqtt"
+let client = mqtt.connect("mqtt://test.mosquitto.org"); // create a client
 
+//cargar variables de entorno
+dotenv.config();
+
+const app = express();
 
 // Evitar problemas de seguridad
 app.disable('x-powered-by');
@@ -12,7 +21,7 @@ app.disable('x-powered-by');
 const port = process.env.PORT;
 
 //-----middlewares
-app.use(express.json());
+app.use(json());
 
 app.use((req, res, next) => {
   console.log(pc.green('middleware en proceso...'));
@@ -27,20 +36,27 @@ app.get('/', (req, res) => {
   res.status(200).send('<h1>The server is running</h1>');
 });
 
-app.get('/dispositivos', (req, res) => {
-  res.status(200).json(datosSensoriales);
+app.use('/devices', devicesRoutes)
+app.use('/locations', locationsRouter)
+app.use('/sensors', sensorsRouter)
+app.use('/sensorData', sensorDataRoutes)
+
+//MQTT
+
+client.on("connect", () => {
+  client.subscribe("/ecoroute/th11", (err) => {
+    if (!err) {
+      client.publish("temperatura", "Hello mqtt");
+    }
+  });
 });
 
-app.get('/dispositivos/:id', (req, res) => {
-  const { id } = req.params;
-  const datoSensorial = datosSensoriales.find(datoSensorial =>
-    datoSensorial.id === Number(id));
 
-  if (datoSensorial) return res.json(datoSensorial);
-  res.status(404).json({ error: 'No se encontró el dato sensorial' });
-
+client.on("message", (topic, message) => {
+  if (topic === `${process.env.TOPIC_RAIZ}/th11`) {
+    console.log("Mensaje recibido en TH11: ", message.toString());
+  }
 });
-
 
 // Ruta de error 404
 app.use((req, res) => {
@@ -50,4 +66,3 @@ app.use((req, res) => {
 app.listen(port, () => {
   console.log(pc.green(`Server is running on port http://localhost:${port}`));
 });
-
