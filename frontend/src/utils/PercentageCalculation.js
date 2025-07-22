@@ -1,4 +1,6 @@
 export const PercentageCalculation = (data) => {
+  if (!data) return 0; // En caso q no vea datos
+
   const { temperature, co2, airQuality } = data;
 
   const maxValues = {
@@ -12,16 +14,16 @@ export const PercentageCalculation = (data) => {
   const normalizedCO2 = 1 - Math.min(co2 / maxValues.co2, 1);
   const normalizedAir = airQuality / maxValues.airQuality;
 
-  return (
+  //para que es el Math.round? si igual me salio sin eso?
+  return Math.round(
     (normalizedTemp * 0.4 +
      normalizedCO2 * 0.3 +
      normalizedAir * 0.3) * 100
   );
-  /**
-   *  return Math.round(
-    (normalizedTemp * 0.4 +
-     normalizedCO2 * 0.3 +
-     normalizedAir * 0.3) * 100
-  );
-   */
+};
+
+export const getColorByPercentage = (percentage) => {
+  if (percentage < 40) return 'red';
+  if (percentage < 70) return 'yellow';
+  return 'green';
 };

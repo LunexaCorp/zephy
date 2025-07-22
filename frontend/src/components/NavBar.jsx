@@ -32,7 +32,7 @@ export default function Navbar() {
                 Ranking
               </a>
               <a
-                href="#"
+                href="/mapa"
                 className="text-gray-300 hover:text-green-400 px-3 py-2 rounded-md transition-colors duration-300"
               >
                 Mapa Interactivo
