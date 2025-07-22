@@ -1,6 +1,0 @@
-### Recuperar todos los datos de sensoriales
-GET http://localhost:3000/dispositivos
-
-### Recuperar dato sensorial por id
-GET http://localhost:3000/dispositivos/2
-
