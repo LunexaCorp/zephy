@@ -1,0 +1,191 @@
+import React, { useState } from "react";
+import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import Modal from "react-modal"; // o puedes usar otro componente de modal
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "rgba(255, 255, 255, 0.9)", // Modal cristal
+    border: "none",
+    borderRadius: "10px",
+    padding: "20px",
+    maxWidth: "80%",
+  },
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+};
+
+// Datos de ejemplo para las zonas
+const zones = [
+  {
+    id: 1,
+    name: "Plaza de armas",
+    position: [-12.59416, -69.176546], // [lat, lng]
+    radius: 30, // metros
+    description: "Aca la vi por ultima vez :c",
+    color: "red",
+  },
+];
+
+const MapwithLocations = () => {
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  const openModal = (zone) => {
+    setSelectedZone(zone);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
+
+  return (
+    <div style={{ height: "100vh", width: "100%" }}>
+      <MapContainer
+        center={[-12.59416, -69.176546]}
+        zoom={20}
+        style={{ height: "100%", width: "100%" }}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+
+        {zones.map((zone) => (
+          <Circle
+            key={zone.id}
+            center={zone.position}
+            radius={zone.radius}
+            color={zone.color}
+            fillOpacity={0.5}
+            eventHandlers={{
+              click: () => openModal(zone),
+            }}
+          >
+            {/*
+            <Popup>
+              <div
+                style={{
+                  textAlign: "center",
+                  background: "rgba(255, 255, 255, 0.25)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  borderRadius: "10px",
+                  padding: "15px",
+                  border: "1px solid rgba(255, 255, 255, 0.18)",
+                  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "5px 0",
+                    color: "white",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  {zone.name}
+                </h4>
+
+                <div
+                  style={{
+                    color: "white",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                    margin: "5px 0",
+                  }}
+                >
+                  Radio: {zone.radius}m
+                </div>
+
+                <button
+                  onClick={() => {
+                    document
+                      .querySelector(".leaflet-popup-close-button")
+                      ?.click();
+                    openModal(zone);
+                  }}
+                  style={{
+                    padding: "5px 12px",
+                    background: "rgba(255, 255, 255, 0.3)",
+                    color: "white",
+                    border: "1px solid rgba(255, 255, 255, 0.4)",
+                    borderRadius: "20px",
+                    cursor: "pointer",
+                    marginTop: "10px",
+                    backdropFilter: "blur(5px)",
+                    transition: "all 0.3s ease",
+                    fontWeight: "500",
+                    textShadow: "0 1px 1px rgba(0,0,0,0.2)",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                    ":hover": {
+                      background: "rgba(255, 255, 255, 0.4)",
+                      transform: "scale(1.05)",
+                    },
+                  }}
+                >
+                  Más info
+                </button>
+              </div>
+            </Popup>
+            */}
+            <Popup>
+              <div style={{ textAlign: "center" }}>
+                <h4 style={{ margin: "5px 0", color: zone.color }}>
+                  {zone.name}
+                </h4>
+                <p>Radio: {zone.radius}m</p>
+                <p>Tipo: {zone.description}</p>
+                <button
+                  onClick={() => {
+                    // Cierra el Popup y abre el Modal
+                    document
+                      .querySelector(".leaflet-popup-close-button")
+                      ?.click();
+                    openModal(zone);
+                  }}
+                  style={{
+                    padding: "3px 8px",
+                    backgroundColor: zone.color,
+                    color: "white",
+                    border: "none",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    marginTop: "5px",
+                  }}
+                >
+                  Más info
+                </button>
+              </div>
+            </Popup>
+          </Circle>
+        ))}
+      </MapContainer>
+
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Información de Zona"
+      >
+        {selectedZone && (
+          <div>
+            <h2>{selectedZone.name}</h2>
+            <p>{selectedZone.description}</p>
+            <p>Radio: {selectedZone.radius} metros</p>
+            <p>Ubicación: {selectedZone.position.join(", ")}</p>
+            <button onClick={closeModal}>Cerrar</button>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
+
+export default MapwithLocations;
