@@ -23,7 +23,7 @@ const MeasurerPage = () => {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-3xl font-bold text-center">
             <span className="text-white">LUNEXA</span>
-            <span className="text-emerald-400"> EcoRoute</span>
+            <span className="text-emerald-400"> Zephy</span>
           </h1>
 
           <div className="w-full sm:w-64">

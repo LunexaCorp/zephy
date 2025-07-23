@@ -1,5 +1,6 @@
 //import locations from '../tests/data/locations.json' with { type: 'json' };
 import Location from '../models/location.js';
+import Device from '../models/device.js';
 
 export async function getLocations(req, res) {
   try{
@@ -21,3 +22,15 @@ export async function getLocationById(req, res) {
     res.status(500).json({error: err});
   }
 };
+
+export async function getDevicesByLocationId(req, res) {
+  try{
+    const { locationId } = req.params;
+    const devices = await Device.find({locationId});
+    res.status(200).json(devices);
+  }catch(err){
+    res.status(500).json({error: err});
+  }
+}
+
+

@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { getDevices, getDeviceById } from '../controllers/devicesController.js';
+import { getDevices, getDeviceById, getSensorsByDeviceId } from '../controllers/devices.controller.js';
 
 const router = Router();
 
@@ -7,5 +7,7 @@ const router = Router();
 router.get('/', getDevices);
 
 router.get('/:id', getDeviceById);
+
+router.get('/:deviceId/sensors', getSensorsByDeviceId);
 
 export default router;
