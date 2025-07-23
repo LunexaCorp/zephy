@@ -15,14 +15,6 @@ dotenv.config();
 
 const app = express();
 
-//importa el orden de ejecucion >:v
-app.use(
-  cors({
-    origin: FRONTEND_REACT || "http://localhost:5173/",
-    credentials: true,
-  })
-);
-
 // Evitar problemas de seguridad
 app.disable("x-powered-by");
 
