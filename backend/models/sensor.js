@@ -2,7 +2,11 @@ import mongoose from 'mongoose';
 
 const sensorSchema = new mongoose.Schema({
   name : String,
-  deviceId: Number,
+  deviceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref : 'Device',
+    required: true
+  },
   isConnected: Boolean
 });
 
