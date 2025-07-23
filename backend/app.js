@@ -9,7 +9,7 @@ import locationsRouter from './routes/locations.router.js';
 import sensorDataRoutes from './routes/sensorData.routes.js';
 import sensorsRouter from './routes/sensors.router.js';
 import mqtt from "mqtt";
-let client = mqtt.connect("mqtt://test.mosquitto.org"); // crea un cliente
+let client = mqtt.connect("mqtt://test.mosquitto.org");
 
 //cargar variables de entorno
 dotenv.config();
