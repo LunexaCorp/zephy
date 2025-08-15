@@ -1,6 +1,6 @@
 //import Devices from '../tests/data/devices.json' with { type: 'json' };
 import Device from '../models/device.js';
-
+import Sensor from '../models/sensor.js';
 
 //2. rescata los datos de la base de datos y los devuelve en un json
 export async function getDevices(req, res) {
@@ -23,3 +23,26 @@ export async function getDeviceById(req, res) {
     res.status(500).json({error: err});
   }
 };
+
+export async function getSensorsByDeviceId(req, res) {
+  try{
+    const { deviceId } = req.params;
+    const sensors = await Sensor.find({deviceId});
+    res.status(200).json(sensors);
+  }catch(err){
+    res.status(500).json({error: err});
+  }
+}
+
+//Traer los ultimos datos lanzados por los sensores
+/*export async function getLastDataByDeviceId(req, res) {
+  try{
+    const { deviceId } = req.params;
+    const sensors = await Sensor.find({deviceId});
+    res.status(200).json(sensors);
+    const last = sensors.
+  }catch(err){
+    res.status(500).json({error: err});
+  }
+}
+  */

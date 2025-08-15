@@ -1,10 +1,17 @@
 import mongoose from 'mongoose';
 
 const sensorDataSchema = new mongoose.Schema({
-  sensorId: Number,
+  sensorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref : 'Sensor',
+    required: true
+  },
   date: Date,
-  data: {type: mongoose.Schema.Types.Mixed, required: true}
-});
+  data: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true}
+  }
+);
 
 const SensorData = mongoose.model('SensorData', sensorDataSchema);
 

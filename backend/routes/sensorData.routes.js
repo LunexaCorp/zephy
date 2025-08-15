@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { getSensorData, getSensorDataById } from '../controllers/sensorDataController.js';
+import { getSensorData, getSensorDataById } from '../controllers/sensorData.controller.js';
 
 const router = Router();
 

@@ -3,17 +3,25 @@ import dotenv from "dotenv";
 import "./config/database.js";
 import pc from "picocolors";
 import { connect } from "mongoose";
-import devicesRoutes from "./routes/devicesRoutes.js";
-import locationsRouter from "./routes/locationsRouter.js";
-import sensorDataRoutes from "./routes/sensorDataRoutes.js";
-import sensorsRouter from "./routes/sensorsRouter.js";
-import mqtt from "mqtt"; // import namespace "mqtt"
-let client = mqtt.connect("mqtt://test.mosquitto.org"); // create a client
+import devicesRoutes from "./routes/devices.routes.js";
+import locationsRouter from "./routes/locations.router.js";
+import sensorDataRoutes from "./routes/sensorData.routes.js";
+import sensorsRouter from "./routes/sensors.router.js";
+import mqtt from "mqtt";
+let client = mqtt.connect("mqtt://test.mosquitto.org");
 
 //cargar variables de entorno
 dotenv.config();
 
 const app = express();
+
+//importa el orden de ejecucion >:v
+app.use(
+  cors({
+    origin: FRONTEND_REACT || "http://localhost:5173/",
+    credentials: true,
+  })
+);
 
 // Evitar problemas de seguridad
 app.disable("x-powered-by");
