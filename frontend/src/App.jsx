@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Measurer from "./pages/MeasurerPage";
 import Ranking from "./pages/RankingPage";
 import NavBar from "./components/NavBar";
-import Mapa from "./pages/Map";
+import MapPage from "./pages/Map";
 
 const App = () => {
   return (
@@ -14,7 +14,7 @@ const App = () => {
         <Route path="/" element={<Measurer />} />
         <Route path="/home" element={<Home />} />
         <Route path="/ranking" element={<Ranking />} />
-        <Route path="/mapa" element={<Mapa />} />
+        <Route path="/mapa" element={<MapPage />} />
       </Routes>
     </Router>
   );
