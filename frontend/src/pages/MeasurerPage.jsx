@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
-import { getLocationSensorData, getLocations } from "../services/axios.js"; // Cambiado a api.js
 import { useNavigate } from "react-router-dom";
 import { EnvironmentalGauge } from "../components/EnvironmentalGauge";
 import { DataItem } from "../components/DataItem";
+import Loader from "../components/Loader.jsx";
+// Importa el nuevo componente para la imagen
+import LoaderTime from "../components/LoaderTime.jsx";
+import NotFound from "../components/NotFound.jsx";
+
+// Importa solo las funciones necesarias
+import { getSingleDashboardData, getLocations } from "../services/axios.js";
 
 const MeasurerPage = () => {
-  const [sensorData, setSensorData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,163 +20,183 @@ const MeasurerPage = () => {
   );
   const navigate = useNavigate();
 
-  // Datos por defecto
-  const currentData = sensorData || {
-    temperature: 0,
-    co2: 0,
-    airQuality: 0,
-    lastUpdate: new Date().toISOString(),
-    location: "Selecciona una ubicación",
-    img: "/fallback.png",
-  };
-
+  // useEffect 1: Carga inicial y lógica de selección
   useEffect(() => {
-    const init = async () => {
+    const initData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const locaciones = await getLocations();
-        setLocations(locaciones);
+        const locs = await getLocations();
+        setLocations(locs);
 
-        const savedLocation =
-          localStorage.getItem("lastLocation") || locaciones[0]?._id;
-        setCurrentLocation(savedLocation);
+        let initialLocationId = currentLocation;
 
-        if (savedLocation) {
-          const data = await getLocationSensorData(savedLocation); // Cambiado aquí
-          setSensorData(data);
+        if (!initialLocationId && locs.length > 0) {
+          initialLocationId = locs[0]._id;
+          setCurrentLocation(initialLocationId);
+        }
+
+        if (initialLocationId) {
+          const data = await getSingleDashboardData(initialLocationId);
+          setDashboardData(data);
         }
       } catch (err) {
-        setError("Error al cargar datos");
-        console.error(err);
+        console.error("Error en la carga inicial:", err);
+        setError("Error al cargar datos iniciales. Intenta de nuevo.");
       } finally {
         setLoading(false);
       }
     };
-
-    init();
+    initData();
   }, []);
 
+  // useEffect 2: Refrescar datos y manejar cambios de ubicación
   useEffect(() => {
-    if (currentLocation) {
-      const fetchData = async () => {
-        try {
-          const data = await getLocationSensorData(currentLocation); // Cambiado aquí
-          // Añade la imagen de la ubicación correspondiente
-          const selectedLocation = locations.find(
-            (loc) => loc._id === currentLocation
-          );
-          setSensorData({
-            ...data,
-            img: selectedLocation?.img || "/fallback.png",
-            location: selectedLocation?.name || "Ubicación desconocida",
-          });
-          localStorage.setItem("lastLocation", currentLocation);
-        } catch (err) {
-          setError("Error al actualizar datos");
-          console.error(err);
-        }
-      };
-
-      fetchData();
-      const interval = setInterval(fetchData, 30000);
-      return () => clearInterval(interval);
+    if (!currentLocation) {
+      return;
     }
-  }, [currentLocation, locations]);
 
-  if (loading) return <div className="text-center py-20">Cargando...</div>;
+    // Establece el dashboardData a null para mostrar el loader de inmediato
+    setDashboardData(null);
+
+    const fetchAndSetData = async () => {
+      try {
+        const data = await getSingleDashboardData(currentLocation);
+        setDashboardData(data);
+      } catch (err) {
+        console.error("Error al actualizar datos:", err);
+        setError("Error al actualizar datos del medidor.");
+      }
+    };
+
+    fetchAndSetData();
+
+    const intervalId = setInterval(fetchAndSetData, 30000);
+
+    localStorage.setItem("lastLocation", currentLocation);
+
+    return () => clearInterval(intervalId);
+  }, [currentLocation]);
+
+  // Se mueve la lógica de fallback al renderizado para reflejar el estado de carga
+  const currentData = dashboardData || {
+    locationId: currentLocation,
+    locationName: "Cargando...",
+    locationImg: null, // Establece la imagen a null para que el Loader se muestre
+    sensorData: {
+      temperature: 0,
+      co2: 0,
+      airQuality: 0,
+      lastUpdate: new Date().toISOString(),
+    },
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center w-screen h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
+   if (error) {
+    return(
+    <div className="flex justify-center items-center w-screen h-screen">
+      <NotFound />
+    </div>
+  )}
+
+  // Lógica de renderizado de la imagen o el loader
+  const imageDisplay = dashboardData && dashboardData.locationImg ? (
+    <img
+      src={currentData.locationImg}
+      alt={currentData.locationName}
+      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+    />
+  ) : (
+    <LoaderTime />
+  );
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-emerald-900">
-        <div className="bg-black px-4 py-5 border-b border-emerald-400/30">
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 className="text-3xl font-bold text-center">
-              <span className="text-white">LUNEXA</span>
-              <span className="text-emerald-400"> Zephy</span>
-            </h1>
-
-            <div className="w-full sm:w-64">
-              <select
-                value={currentLocation}
-                onChange={(e) => setCurrentLocation(e.target.value)}
-                className="w-full p-3 rounded-lg bg-gray-800 text-white border border-emerald-400/50 focus:ring-2 focus:ring-emerald-400"
-              >
-                {locations.map((loc) => (
-                  <option key={loc._id} value={loc._id} className="bg-gray-800">
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-emerald-900">
+      {/* Header */}
+      <div className="bg-black px-4 py-5 border-b border-emerald-400/30">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h1 className="text-3xl font-bold text-center">
+            <span className="text-white">LUNEXA</span>
+            <span className="text-emerald-400"> Zephy</span>
+          </h1>
+          <div className="w-full sm:w-64">
+            <select
+              value={currentLocation || ""}
+              onChange={(e) => setCurrentLocation(e.target.value)}
+              className="w-full p-3 rounded-lg bg-gray-800 text-white border border-emerald-400/50 focus:ring-2 focus:ring-emerald-400"
+            >
+              <option value="" disabled>
+                Selecciona una ubicación
+              </option>
+              {locations.map((loc) => (
+                <option key={loc._id} value={loc._id} className="bg-gray-800">
+                  {loc.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
+      </div>
 
-        {/* Contenido principal */}
-        {sensorData && <div>si hay datos</div>}
-        <main className="max-w-6xl mx-auto p-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Columna 1.- Gauge */}
-            <div className="lg:col-span-1 bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-2xl border border-emerald-400/20">
-              <EnvironmentalGauge data={currentData} />
-            </div>
-
-            {/* Columna 2.- Datos */}
-            <div className="lg:col-span-1 bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-2xl border border-emerald-400/20">
-              <h2 className="text-xl font-bold text-emerald-400 mb-5 flex items-center">
-                <span className="inline-block w-2 h-6 bg-emerald-500 mr-3"></span>
-                Datos en Tiempo Real
-              </h2>
-              <div className="grid grid-cols-1 gap-4">
-                <DataItem
-                  label="Lugar"
-                  value={currentData.location}
-                  icon="📍"
-                />
-                <DataItem
-                  label="Temperatura"
-                  value={`${currentData.temperature}°C`}
-                  icon="🌡️"
-                />
-                <DataItem
-                  label="CO₂"
-                  value={`${currentData.co2} ppm`}
-                  icon="☁️"
-                />
-                <DataItem
-                  label="Calidad Aire"
-                  value={`${currentData.airQuality}/100`}
-                  icon="🍃"
-                />
-              </div>
-            </div>
-
-            {/* Columna 3.- Imagen */}
-            <div className="lg:col-span-1 overflow-hidden rounded-xl shadow-2xl border border-emerald-400/20 group">
-              <img
-                src={currentData.img}
-                alt={currentData.location}
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+      {/* Main */}
+      <main className="max-w-6xl mx-auto p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-2xl border border-emerald-400/20">
+            <EnvironmentalGauge data={currentData.sensorData} />
+          </div>
+          <div className="lg:col-span-1 bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-2xl border border-emerald-400/20">
+            <h2 className="text-xl font-bold text-emerald-400 mb-5 flex items-center">
+              <span className="inline-block w-2 h-6 bg-emerald-500 mr-3"></span>
+              Datos en Tiempo Real
+            </h2>
+            <div className="grid grid-cols-1 gap-4">
+              <DataItem label="Lugar" value={currentData.locationName} icon="📍" />
+              <DataItem
+                label="Temperatura"
+                value={currentData.sensorData ? `${currentData.sensorData.temperature}°C` : "N/A"}
+                icon="🌡️"
+              />
+              <DataItem
+                label="CO₂"
+                value={currentData.sensorData ? `${currentData.sensorData.co2} ppm` : "N/A"}
+                icon="☁️"
+              />
+              <DataItem
+                label="Calidad Aire"
+                value={currentData.sensorData ? `${currentData.sensorData.airQuality}/100` : "N/A"}
+                icon="🍃"
               />
             </div>
           </div>
-
-          {/* Botones flotantes */}
-          <div className="fixed bottom-6 right-6 flex gap-3">
-            <button
-              onClick={() => navigate("/ranking")}
-              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-lg flex items-center gap-2 transition-all"
-            >
-              <span className="text-white font-medium">🏆 Ranking</span>
-            </button>
-            <button
-              onClick={() => navigate("/mapa")}
-              className="px-5 py-3 bg-gray-800 hover:bg-gray-700 border border-emerald-400/30 rounded-full shadow-lg flex items-center gap-2 transition-all"
-            >
-              <span className="text-emerald-400 font-medium">🗺️ Mapa</span>
-            </button>
+          <div className="lg:col-span-1 overflow-hidden rounded-xl shadow-2xl border border-emerald-400/20 group flex items-center justify-center">
+            {imageDisplay}
           </div>
-        </main>
-      </div>
-    </>
+        </div>
+
+        {/* Botones flotantes */}
+        <div className="fixed bottom-6 right-6 flex gap-3">
+          <button
+            onClick={() => navigate("/ranking")}
+            className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-lg flex items-center gap-2 transition-all"
+          >
+            <span className="text-white font-medium">🏆 Ranking</span>
+          </button>
+          <button
+            onClick={() => navigate("/mapa")}
+            className="px-5 py-3 bg-gray-800 hover:bg-gray-700 border border-emerald-400/30 rounded-full shadow-lg flex items-center gap-2 transition-all"
+          >
+            <span className="text-emerald-400 font-medium">🗺️ Mapa</span>
+          </button>
+        </div>
+      </main>
+    </div>
   );
 };
 

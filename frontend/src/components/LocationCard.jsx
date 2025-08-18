@@ -1,6 +1,31 @@
+import PropTypes from 'prop-types';
+import { Thermometer, Cloud, Wind } from 'lucide-react';
+
+LocationCard.propTypes = {
+  location: PropTypes.shape({
+    id: PropTypes.string,
+    name: PropTypes.string,
+    description: PropTypes.string,
+    position: PropTypes.array,
+    img: PropTypes.string,
+    percentage: PropTypes.number,
+    color: PropTypes.string,
+    lastUpdated: PropTypes.string,
+    radius: PropTypes.number,
+    sensorData: PropTypes.shape({
+      temperature: PropTypes.number,
+      co2: PropTypes.number,
+      airQuality: PropTypes.number,
+      lastUpdated: PropTypes.string,
+    }),
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+
 export default function LocationCard({ location, onClose }) {
   return (
-    <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-2xl border border-emerald-500/30 w-80 overflow-hidden">
+    <div className="bg-gray-900/80 backdrop-blur-md rounded-xl shadow-2xl border border-emerald-500/30 w-80 overflow-hidden">
+      {/* Imagen y botón cerrar */}
       <div className="relative">
         <img
           src={location.img || "/fallback-location.jpg"}
@@ -9,46 +34,41 @@ export default function LocationCard({ location, onClose }) {
         />
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 bg-black/50 rounded-full p-1 hover:bg-black/80 transition"
+          className="absolute top-2 right-2 bg-black/50 rounded-full p-2 hover:bg-black/80 transition"
         >
           ✕
         </button>
       </div>
 
-      <div className="p-4">
-        <h3 className="text-xl font-bold text-white">{location.name}</h3>
-        <div className="flex items-center mt-2 mb-4">
-          <div
-            className="w-4 h-4 rounded-full mr-2"
-            style={{ backgroundColor: location.color }}
-          />
-          <span className="text-sm font-medium text-gray-300">
-            {location.percentage}% -{" "}
-            {location.percentage >= 70
-              ? "Saludable"
-              : location.percentage >= 40
-              ? "Moderado"
-              : "Peligroso"}
-          </span>
+      {/* Contenido */}
+      <div className="p-4 space-y-3">
+        <h2 className="text-xl font-bold text-emerald-400">{location.name}</h2>
+        <p className="text-gray-300 text-sm">{location.description}</p>
+
+        {/* Sensores */}
+        <div className="grid grid-cols-3 gap-2 text-sm">
+          <div className="flex flex-col items-center bg-gray-800/50 rounded p-2">
+            <Thermometer className="text-red-400 mb-1" size={18} />
+            <span className="text-gray-400 text-xs">Temperatura</span>
+            <span className="font-bold text-white">{location.sensorData.temperature}°C</span>
+          </div>
+
+          <div className="flex flex-col items-center bg-gray-800/50 rounded p-2">
+            <Cloud className="text-blue-400 mb-1" size={18} />
+            <span className="text-gray-400 text-xs">CO₂</span>
+            <span className="font-bold text-white">{location.sensorData.co2} ppm</span>
+          </div>
+
+          <div className="flex flex-col items-center bg-gray-800/50 rounded p-2">
+            <Wind className="text-green-400 mb-1" size={18} />
+            <span className="text-gray-400 text-xs">Calidad Aire</span>
+            <span className="font-bold text-white">{location.sensorData.airQuality}/100</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="bg-gray-700/50 rounded p-2">
-            <p className="text-gray-400">Temperatura</p>
-            <p className="font-bold">{location.temperature}°C</p>
-          </div>
-          <div className="bg-gray-700/50 rounded p-2">
-            <p className="text-gray-400">CO₂</p>
-            <p className="font-bold">{location.co2} ppm</p>
-          </div>
-          <div className="bg-gray-700/50 rounded p-2">
-            <p className="text-gray-400">Calidad Aire</p>
-            <p className="font-bold">{location.airQuality}/100</p>
-          </div>
-          <div className="bg-gray-700/50 rounded p-2">
-            <p className="text-gray-400">Última lectura</p>
-            <p className="font-bold">{location.lastUpdated}</p>
-          </div>
+        {/* Última lectura */}
+        <div className="mt-2 text-right text-gray-400 text-xs">
+          Última lectura: {location.sensorData.lastUpdated}
         </div>
       </div>
     </div>
