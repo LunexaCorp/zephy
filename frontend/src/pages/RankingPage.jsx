@@ -1,17 +1,79 @@
 import { sensorData } from "../data/sensorData";
+import { useState, useEffect } from "react";
 import { PercentageCalculation } from "../utils/PercentageCalculation";
 import { useNavigate } from "react-router-dom";
+import { getLocations, getLocationSensorData } from "../services/axios.js"; // Importamos las funciones del backend
 
 const RankingPage = () => {
   const navigate = useNavigate();
+  const [rankingData, setRankingData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const LocacionRanking = Object.entries(sensorData)
-    .map(([id, data]) => ({
-      id,
-      ...data,
-      index: PercentageCalculation(data),
-    }))
-    .sort((a, b) => b.index - a.index);
+  useEffect(() => {
+    const fetchRankingData = async () => {
+      try {
+        // 1. Obtener todas las ubicaciones
+        const locations = await getLocations();
+
+        // 2. Obtener datos de sensores para cada ubicación
+        const locationsWithData = await Promise.all(
+          locations.map(async (loc) => {
+            const sensorData = await getLocationSensorData(loc._id);
+            return {
+              id: loc._id,
+              location: loc.name,
+              img: loc.img,
+              ...sensorData,
+              index: PercentageCalculation(sensorData),
+            };
+          })
+        );
+
+        // 3. Ordenar por puntaje
+        const sortedData = locationsWithData.sort((a, b) => b.index - a.index);
+        setRankingData(sortedData);
+      } catch (err) {
+        console.error("Error fetching ranking data:", err);
+        setError("Error al cargar datos del ranking");
+        // Datos de respaldo (opcional)
+        setRankingData([
+          {
+            id: "backup",
+            location: "Modo offline",
+            temperature: 0,
+            co2: 0,
+            airQuality: 0,
+            index: 0,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRankingData();
+
+    // Opcional: Actualizar datos periódicamente
+    const interval = setInterval(fetchRankingData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-emerald-400 text-xl">Cargando ranking...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-red-400 text-xl">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -38,7 +100,7 @@ const RankingPage = () => {
         </div>
         {/* Versión mobile */}
         <div className="lg:hidden space-y-4">
-          {LocacionRanking.map((loc, index) => (
+          {rankingData.map((loc, index) => (
             <div
               key={loc.id}
               className="bg-gray-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg"
@@ -101,7 +163,7 @@ const RankingPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {LocacionRanking.map((loc, index) => (
+                {rankingData.map((loc, index) => (
                   <tr
                     key={loc.id}
                     className="hover:bg-gray-700/50 transition-colors duration-200"
