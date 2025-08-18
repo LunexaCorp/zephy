@@ -1,8 +1,8 @@
-import { sensorData } from "../data/sensorData";
 import { useState, useEffect } from "react";
 import { PercentageCalculation } from "../utils/PercentageCalculation";
 import { useNavigate } from "react-router-dom";
-import { getLocations, getLocationSensorData } from "../services/axios.js"; // Importamos las funciones del backend
+import { getLocations, getSingleDashboardData } from "../services/axios.js"; // Importamos las funciones del backend
+import Loader from "../components/Loader";
 
 const RankingPage = () => {
   const navigate = useNavigate();
@@ -13,56 +13,48 @@ const RankingPage = () => {
   useEffect(() => {
     const fetchRankingData = async () => {
       try {
-        // 1. Obtener todas las ubicaciones
         const locations = await getLocations();
-
-        // 2. Obtener datos de sensores para cada ubicación
         const locationsWithData = await Promise.all(
           locations.map(async (loc) => {
-            const sensorData = await getLocationSensorData(loc._id);
+            const response = await getSingleDashboardData(loc._id);
+
+            // 💡 CAMBIO: Accede directamente a la propiedad `sensorData`
+            const sensorData = response.sensorData || {};
+
+            console.log("Datos del sensor para", loc.name, ":", sensorData);
+
             return {
               id: loc._id,
               location: loc.name,
               img: loc.img,
-              ...sensorData,
+              temperature: sensorData.temperature,
+              co2: sensorData.co2,
+              airQuality: sensorData.airQuality,
               index: PercentageCalculation(sensorData),
             };
           })
         );
 
-        // 3. Ordenar por puntaje
         const sortedData = locationsWithData.sort((a, b) => b.index - a.index);
         setRankingData(sortedData);
       } catch (err) {
         console.error("Error fetching ranking data:", err);
         setError("Error al cargar datos del ranking");
-        // Datos de respaldo (opcional)
-        setRankingData([
-          {
-            id: "backup",
-            location: "Modo offline",
-            temperature: 0,
-            co2: 0,
-            airQuality: 0,
-            index: 0,
-          },
-        ]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchRankingData();
-
-    // Opcional: Actualizar datos periódicamente
     const interval = setInterval(fetchRankingData, 30000);
     return () => clearInterval(interval);
   }, []);
 
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-emerald-400 text-xl">Cargando ranking...</div>
+      <div className="flex justify-center items-center w-screen h-screen">
+        <Loader />
       </div>
     );
   }
@@ -112,19 +104,18 @@ const RankingPage = () => {
                 </div>
                 {/*Estilo dependiendo al index*/}
                 <span
-                  className={`px-2 py-1 rounded text-xs font-bold ${
-                    loc.index >= 70
-                      ? "bg-emerald-900 text-emerald-300"
-                      : loc.index >= 40
+                  className={`px-2 py-1 rounded text-xs font-bold ${loc.index >= 70
+                    ? "bg-emerald-900 text-emerald-300"
+                    : loc.index >= 40
                       ? "bg-amber-900 text-amber-300"
                       : "bg-red-900 text-red-300"
-                  }`}
+                    }`}
                 >
                   {loc.index >= 70
                     ? "SALUDABLE"
                     : loc.index >= 40
-                    ? "MODERADO"
-                    : "PELIGROSO"}
+                      ? "MODERADO"
+                      : "PELIGROSO"}
                 </span>
               </div>
 
@@ -135,13 +126,12 @@ const RankingPage = () => {
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full ${
-                      loc.index >= 70
-                        ? "bg-emerald-500"
-                        : loc.index >= 40
+                    className={`h-2 rounded-full ${loc.index >= 70
+                      ? "bg-emerald-500"
+                      : loc.index >= 40
                         ? "bg-amber-500"
                         : "bg-red-500"
-                    }`}
+                      }`}
                     style={{ width: `${loc.index}%` }}
                   ></div>
                 </div>
@@ -174,13 +164,12 @@ const RankingPage = () => {
                       <div className="flex items-center">
                         <div className="w-24 bg-gray-700 rounded-full h-2.5 mr-3">
                           <div
-                            className={`h-2.5 rounded-full ${
-                              loc.index >= 70
-                                ? "bg-emerald-500"
-                                : loc.index >= 40
+                            className={`h-2.5 rounded-full ${loc.index >= 70
+                              ? "bg-emerald-500"
+                              : loc.index >= 40
                                 ? "bg-amber-500"
                                 : "bg-red-500"
-                            }`}
+                              }`}
                             style={{ width: `${loc.index}%` }}
                           ></div>
                         </div>
@@ -191,19 +180,18 @@ const RankingPage = () => {
                     </td>
                     <td className="p-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          loc.index >= 70
-                            ? "bg-emerald-900/50 text-emerald-300"
-                            : loc.index >= 40
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${loc.index >= 70
+                          ? "bg-emerald-900/50 text-emerald-300"
+                          : loc.index >= 40
                             ? "bg-amber-900/50 text-amber-300"
                             : "bg-red-900/50 text-red-300"
-                        }`}
+                          }`}
                       >
                         {loc.index >= 70
                           ? "SALUDABLE"
                           : loc.index >= 40
-                          ? "MODERADO"
-                          : "PELIGROSO"}
+                            ? "MODERADO"
+                            : "PELIGROSO"}
                       </span>
                     </td>
                   </tr>
