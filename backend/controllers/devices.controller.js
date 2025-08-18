@@ -1,6 +1,6 @@
 //import Devices from '../tests/data/devices.json' with { type: 'json' };
 import Device from '../models/device.js';
-import Sensor from '../models/sensor.js';
+import Sensor from '../models/sensorData.js';
 
 //2. rescata los datos de la base de datos y los devuelve en un json
 export async function getDevices(req, res) {
