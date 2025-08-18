@@ -5,38 +5,23 @@ import pc from "picocolors";
 import { connect } from "mongoose";
 import devicesRoutes from "./routes/devices.routes.js";
 import locationsRouter from "./routes/locations.router.js";
-import sensorDataRoutes from "./routes/sensorData.routes.js";
-import sensorsRouter from "./routes/sensors.router.js";
+import sensorDataRouter from "./routes/sensorData.router.js";
+import dashboardRoutes from "./routes/dashboard.router.js";
 import mqtt from "mqtt";
+import cors from "cors";
 let client = mqtt.connect("mqtt://test.mosquitto.org");
-
 //cargar variables de entorno
 dotenv.config();
 
 const app = express();
 
-//importa el orden de ejecucion >:v
-app.use(
-  cors({
-    origin: FRONTEND_REACT || "http://localhost:5173/",
-    credentials: true,
-  })
-);
-
-// Evitar problemas de seguridad
 app.disable("x-powered-by");
 
 const port = process.env.PORT;
 
 //-----middlewares
 app.use(json());
-
-app.use((req, res, next) => {
-  console.log(pc.green("middleware en proceso..."));
-  // trackear la request a la base de datos
-  // revisar si el usuario tiene cookies
-  next();
-});
+app.use(cors());
 
 //-----rutas
 // Ruta de inicio
@@ -44,12 +29,17 @@ app.get("/", (req, res) => {
   res.status(200).send("<h1>The server is running</h1>");
 });
 
-app.use("/devices", devicesRoutes);
-app.use("/locations", locationsRouter);
-app.use("/sensors", sensorsRouter);
-app.use("/sensorData", sensorDataRoutes);
+const apiRouter = express.Router();
 
-//MQTT
+// Usa el enrutador de la API para todas las rutas
+apiRouter.use("/devices", devicesRoutes);
+apiRouter.use("/dashboard", dashboardRoutes);
+apiRouter.use("/locations", locationsRouter);
+apiRouter.use("/sensordata", sensorDataRouter);
+
+app.use("/api", apiRouter);
+
+/*MQTT
 
 client.on("connect", () => {
   client.subscribe("/ecoroute/th11", (err) => {
@@ -65,11 +55,13 @@ client.on("message", (topic, message) => {
   }
 });
 
+*/
+
 // Ruta de error 404
 app.use((req, res) => {
   res.status(404).send("404 Not Found");
 });
 
 app.listen(port, () => {
-  console.log(pc.green(`Server is running on port http://localhost:${port}`));
+  console.log(pc.green(`Server is running on port ${port}`));
 });
