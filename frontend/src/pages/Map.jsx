@@ -7,7 +7,6 @@ import {
 } from "../utils/PercentageCalculation.js";
 import LocationCard from "../components/LocationCard";
 import FilterPanel from "../components/FilterPanel";
-import NotFound from "../components/NotFound.jsx";
 
 const MapPage = () => {
   const [processedLocations, setProcessedLocations] = useState([]);
@@ -87,12 +86,9 @@ const MapPage = () => {
     return true;
   });
 
-  if (error)
-    return (
-      <div className="flex justify-center items-center w-screen h-screen">
-        <NotFound />
-      </div>
-    );
+  if (error) {
+    console.log("error temporal:"+error);
+  }
 
   return (
     <div className="relative h-screen w-full bg-gray-900">

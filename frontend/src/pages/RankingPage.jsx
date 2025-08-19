@@ -3,7 +3,6 @@ import { PercentageCalculation } from "../utils/PercentageCalculation";
 import { useNavigate } from "react-router-dom";
 import { getLocations, getSingleDashboardData } from "../services/axios.js"; // Importamos las funciones del backend
 import Loader from "../components/Loader";
-import NotFound from "../components/NotFound.jsx";
 
 const RankingPage = () => {
   const navigate = useNavigate();
@@ -60,11 +59,7 @@ const RankingPage = () => {
   }
 
   if (error) {
-    return (
-      <div className="flex justify-center items-center w-screen h-screen">
-        <NotFound />
-      </div>
-    );
+    console.log("error temporal:"+error);
   }
 
   return (

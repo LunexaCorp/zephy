@@ -11,7 +11,6 @@ import { DataItem } from "../components/DataItem";
 import Loader from "../components/Loader.jsx";
 // Importa el nuevo componente para la imagen
 import LoaderTime from "../components/LoaderTime.jsx";
-import NotFound from "../components/NotFound.jsx";
 
 // Importa solo las funciones necesarias
 import { getSingleDashboardData, getLocations } from "../services/axios.js";
@@ -106,11 +105,7 @@ const MeasurerPage = () => {
   }
 
   if (error) {
-    return (
-      <div className="flex justify-center items-center w-screen h-screen">
-        <NotFound />
-      </div>
-    );
+    console.log("error temporal:"+error);
   }
 
   // Lógica de renderizado de la imagen o el loader
