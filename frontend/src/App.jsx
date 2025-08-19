@@ -16,7 +16,9 @@ const App = () => {
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/mapa" element={<MapPage />} />
         {/* Cualquier ruta que no exista */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<div className="flex justify-center items-center w-screen h-screen">
+          <NotFound />
+        </div>} />
       </Routes>
     </Router>
   );
