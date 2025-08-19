@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnvironmentalGauge } from "../components/EnvironmentalGauge";
+
+import EnvironmentalTabs from "../components/EnvironmentalTabs";
+
 import { DataItem } from "../components/DataItem";
 import Loader from "../components/Loader.jsx";
 // Importa el nuevo componente para la imagen
@@ -99,23 +102,25 @@ const MeasurerPage = () => {
     );
   }
 
-   if (error) {
-    return(
-    <div className="flex justify-center items-center w-screen h-screen">
-      <NotFound />
-    </div>
-  )}
+  if (error) {
+    return (
+      <div className="flex justify-center items-center w-screen h-screen">
+        <NotFound />
+      </div>
+    );
+  }
 
   // Lógica de renderizado de la imagen o el loader
-  const imageDisplay = dashboardData && dashboardData.locationImg ? (
-    <img
-      src={currentData.locationImg}
-      alt={currentData.locationName}
-      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-    />
-  ) : (
-    <LoaderTime />
-  );
+  const imageDisplay =
+    dashboardData && dashboardData.locationImg ? (
+      <img
+        src={currentData.locationImg}
+        alt={currentData.locationName}
+        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+      />
+    ) : (
+      <LoaderTime />
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-emerald-900">
@@ -157,20 +162,36 @@ const MeasurerPage = () => {
               Datos en Tiempo Real
             </h2>
             <div className="grid grid-cols-1 gap-4">
-              <DataItem label="Lugar" value={currentData.locationName} icon="📍" />
+              <DataItem
+                label="Lugar"
+                value={currentData.locationName}
+                icon="📍"
+              />
               <DataItem
                 label="Temperatura"
-                value={currentData.sensorData ? `${currentData.sensorData.temperature}°C` : "N/A"}
+                value={
+                  currentData.sensorData
+                    ? `${currentData.sensorData.temperature}°C`
+                    : "N/A"
+                }
                 icon="🌡️"
               />
               <DataItem
                 label="CO₂"
-                value={currentData.sensorData ? `${currentData.sensorData.co2} ppm` : "N/A"}
+                value={
+                  currentData.sensorData
+                    ? `${currentData.sensorData.co2} ppm`
+                    : "N/A"
+                }
                 icon="☁️"
               />
               <DataItem
                 label="Calidad Aire"
-                value={currentData.sensorData ? `${currentData.sensorData.airQuality}/100` : "N/A"}
+                value={
+                  currentData.sensorData
+                    ? `${currentData.sensorData.airQuality}/100`
+                    : "N/A"
+                }
                 icon="🍃"
               />
             </div>
@@ -179,6 +200,16 @@ const MeasurerPage = () => {
             {imageDisplay}
           </div>
         </div>
+
+        <div className="mt-6">
+          <EnvironmentalTabs sensorData={currentData.sensorData} />
+        </div>
+
+        {/*
+          <div className="lg:col-span-2 overflow-hidden rounded-xl shadow-2xl border border-emerald-400/20 group flex items-center justify-center">
+            {imageDisplay}
+          </div>
+        */}
 
         {/* Botones flotantes */}
         <div className="fixed bottom-6 right-6 flex gap-3">
