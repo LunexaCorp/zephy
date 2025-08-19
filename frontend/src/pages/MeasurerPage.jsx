@@ -213,7 +213,7 @@ const MeasurerPage = () => {
           <EnvironmentalTabs sensorData={currentData.sensorData} />
         </div>
 
-        <div className="lg:col-span-1 mt-6">
+        <div className="lg:col-span-1 mt-6 mb-20">
           <TipsCarousel sensorData={currentData.sensorData} />
         </div>
 
