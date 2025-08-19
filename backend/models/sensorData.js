@@ -4,6 +4,7 @@ const sensorDataSchema = new mongoose.Schema({
   temperature: { type: Number, required: true },
   co2: { type: Number, required: true },
   airQuality: { type: Number, required: true },
+  uvIndex: { type: Number, required: false   },
   lastUpdate: { type: Date, default: Date.now },
 });
 
