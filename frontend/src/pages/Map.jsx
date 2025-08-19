@@ -54,9 +54,11 @@ const MapPage = () => {
                 co2: sensorData.co2 ?? 0,
                 airQuality: sensorData.airQuality ?? 0,
                 lastUpdated: sensorData.lastUpdate
-                  ? new Date(sensorData.lastUpdate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  : "N/A"
-
+                  ? new Date(sensorData.lastUpdate).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "N/A",
               },
             };
           })
@@ -87,10 +89,10 @@ const MapPage = () => {
 
   if (error)
     return (
-    <div className="flex justify-center items-center w-screen h-screen">
-      <NotFound />
-    </div>
-  )
+      <div className="flex justify-center items-center w-screen h-screen">
+        <NotFound />
+      </div>
+    );
 
   return (
     <div className="relative h-screen w-full bg-gray-900">
@@ -131,7 +133,7 @@ const MapPage = () => {
             absolute z-10 pointer-events-auto
             bottom-4 left-8 transform -translate-x-px
             w-[calc(100%-2rem)] max-w-md
-            lg:left-4 lg:top-1/2 lg:transform lg:-translate-y-1/2 lg:bottom-auto
+            lg:left-4 lg:top-110 lg:transform lg:-translate-y-1/2 lg:bottom-auto
             transition-all duration-300
           `}
         >
@@ -145,8 +147,7 @@ const MapPage = () => {
       <div
         className={`
           absolute bottom-20 right-4 bg-black/70 backdrop-blur rounded-lg p-3 border border-gray-600 pointer-events-auto
-          ${selectedLocation ? "z-5" : " z-10 "
-          }
+          ${selectedLocation ? "z-5" : " z-10 "}
           transition-all duration-300
         `}
       >

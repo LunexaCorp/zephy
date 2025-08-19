@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { EnvironmentalGauge } from "../components/EnvironmentalGauge";
 
+import { EnvironmentalGauge } from "../components/EnvironmentalGauge";
 import EnvironmentalTabs from "../components/EnvironmentalTabs";
+import TipsCarousel from "../components/TipsCarousel";
+import { Icon } from "../components/Icons.jsx";
 
 import { DataItem } from "../components/DataItem";
+
 import Loader from "../components/Loader.jsx";
 // Importa el nuevo componente para la imagen
 import LoaderTime from "../components/LoaderTime.jsx";
@@ -165,7 +168,9 @@ const MeasurerPage = () => {
               <DataItem
                 label="Lugar"
                 value={currentData.locationName}
-                icon="📍"
+                icon={
+                  <Icon name="location" size={20} className="text-blue-400" />
+                }
               />
               <DataItem
                 label="Temperatura"
@@ -174,7 +179,9 @@ const MeasurerPage = () => {
                     ? `${currentData.sensorData.temperature}°C`
                     : "N/A"
                 }
-                icon="🌡️"
+                icon={
+                  <Icon name="temperature" size={20} className="text-red-400" />
+                }
               />
               <DataItem
                 label="CO₂"
@@ -183,7 +190,7 @@ const MeasurerPage = () => {
                     ? `${currentData.sensorData.co2} ppm`
                     : "N/A"
                 }
-                icon="☁️"
+                icon={<Icon name="co2" size={20} className="text-blue-400" />}
               />
               <DataItem
                 label="Calidad Aire"
@@ -192,7 +199,13 @@ const MeasurerPage = () => {
                     ? `${currentData.sensorData.airQuality}/100`
                     : "N/A"
                 }
-                icon="🍃"
+                icon={
+                  <Icon
+                    name="airQuality"
+                    size={20}
+                    className="text-green-400"
+                  />
+                }
               />
             </div>
           </div>
@@ -205,6 +218,10 @@ const MeasurerPage = () => {
           <EnvironmentalTabs sensorData={currentData.sensorData} />
         </div>
 
+        <div className="lg:col-span-1 mt-6">
+          <TipsCarousel sensorData={currentData.sensorData} />
+        </div>
+
         {/*
           <div className="lg:col-span-2 overflow-hidden rounded-xl shadow-2xl border border-emerald-400/20 group flex items-center justify-center">
             {imageDisplay}
@@ -215,15 +232,32 @@ const MeasurerPage = () => {
         <div className="fixed bottom-6 right-6 flex gap-3">
           <button
             onClick={() => navigate("/ranking")}
-            className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-lg flex items-center gap-2 transition-all"
+            className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-full shadow-lg flex items-center gap-2 transition-all transform hover:scale-105 group relative overflow-hidden"
           >
-            <span className="text-white font-medium">🏆 Ranking</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <Icon
+              name="trophy"
+              size={20}
+              className="text-white relative z-10"
+            />
+            <span className="text-white font-medium relative z-10">
+              Ranking
+            </span>
           </button>
+
           <button
             onClick={() => navigate("/mapa")}
-            className="px-5 py-3 bg-gray-800 hover:bg-gray-700 border border-emerald-400/30 rounded-full shadow-lg flex items-center gap-2 transition-all"
+            className="px-5 py-3 bg-gray-800 hover:bg-gray-700 border border-emerald-400/30 rounded-full shadow-lg flex items-center gap-2 transition-all transform hover:scale-105 group relative overflow-hidden"
           >
-            <span className="text-emerald-400 font-medium">🗺️ Mapa</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <Icon
+              name="map"
+              size={20}
+              className="text-emerald-400 relative z-10"
+            />
+            <span className="text-emerald-400 font-medium relative z-10">
+              Mapa
+            </span>
           </button>
         </div>
       </main>

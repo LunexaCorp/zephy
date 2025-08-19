@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
-import { Thermometer, Cloud, Wind } from 'lucide-react';
+import PropTypes from "prop-types";
+import { Thermometer, Cloud, Wind } from "lucide-react";
 
 LocationCard.propTypes = {
   location: PropTypes.shape({
@@ -40,8 +40,8 @@ export default function LocationCard({ location, onClose }) {
         </button>
       </div>
 
-      {/* Contenido */}
-      <div className="p-4 space-y-3">
+      {/* descripcion del lugar */}
+      <div className="p-4 space-y-3 mt-6">
         <h2 className="text-xl font-bold text-emerald-400">{location.name}</h2>
         <p className="text-gray-300 text-sm">{location.description}</p>
 
@@ -50,19 +50,25 @@ export default function LocationCard({ location, onClose }) {
           <div className="flex flex-col items-center bg-gray-800/50 rounded p-2">
             <Thermometer className="text-red-400 mb-1" size={18} />
             <span className="text-gray-400 text-xs">Temperatura</span>
-            <span className="font-bold text-white">{location.sensorData.temperature}°C</span>
+            <span className="font-bold text-white">
+              {location.sensorData.temperature}°C
+            </span>
           </div>
 
           <div className="flex flex-col items-center bg-gray-800/50 rounded p-2">
             <Cloud className="text-blue-400 mb-1" size={18} />
             <span className="text-gray-400 text-xs">CO₂</span>
-            <span className="font-bold text-white">{location.sensorData.co2} ppm</span>
+            <span className="font-bold text-white">
+              {location.sensorData.co2} ppm
+            </span>
           </div>
 
           <div className="flex flex-col items-center bg-gray-800/50 rounded p-2">
             <Wind className="text-green-400 mb-1" size={18} />
             <span className="text-gray-400 text-xs">Calidad Aire</span>
-            <span className="font-bold text-white">{location.sensorData.airQuality}/100</span>
+            <span className="font-bold text-white">
+              {location.sensorData.airQuality}/100
+            </span>
           </div>
         </div>
 

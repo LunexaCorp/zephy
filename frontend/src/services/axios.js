@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Configuración para desarrollo/producción
 const baseURL = import.meta.env.PROD
-  ? "https://ecoroute-backend.onrender.com/api"
+  ? import.meta.env.VITE_BACKEND_BASE_URL
   : `http://localhost:${import.meta.env.VITE_PORT}/api`;
 
 const api = axios.create({
