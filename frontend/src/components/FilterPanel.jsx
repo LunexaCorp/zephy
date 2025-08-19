@@ -1,4 +1,3 @@
-// components/FilterPanel.jsx
 const FilterPanel = ({ currentFilter, onChangeFilter, className }) => {
   const filters = [
     { value: "all", label: "Todos", colorClass: "bg-gray-500" },

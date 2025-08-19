@@ -1,6 +1,7 @@
 import { GaugeComponent } from "react-gauge-component";
 import { PercentageCalculation } from "../utils/PercentageCalculation.js";
 import { useState, useEffect } from "react";
+import { Icon } from "./Icons";
 
 export const EnvironmentalGauge = ({ data }) => {
   const [animatedValue, setAnimatedValue] = useState(0);
@@ -51,23 +52,32 @@ export const EnvironmentalGauge = ({ data }) => {
         />
 
         <div className="text-center mt-6">
-          <h2 className="text-2xl font-bold text-white">
-            Calidad del Ambiental
-          </h2>
+          <h2 className="text-2xl font-bold text-white">Medición ambiente</h2>
           <p
-            className={`text-xl mt-2 font-semibold ${
+            className={`text-lg mt-2 font-semibold px-2 py-1 rounded-md inline-flex items-center animate-pulse ${
               animatedValue >= 70
-                ? "text-green-600"
+                ? "text-green-400 bg-green-400/10"
                 : animatedValue >= 40
-                ? "text-amber-600"
-                : "text-red-600"
+                ? "text-amber-400 bg-amber-400/10"
+                : "text-red-400 bg-red-400/10"
             }`}
           >
+            <Icon
+              name={
+                animatedValue >= 70
+                  ? "success"
+                  : animatedValue >= 40
+                  ? "warning"
+                  : "alert"
+              }
+              size={16}
+              className="mr-1.5"
+            />
             {animatedValue >= 70
-              ? "✅ Saludable"
+              ? "Saludable"
               : animatedValue >= 40
-              ? "⚠️ Moderado"
-              : "❌ Peligroso"}
+              ? "Moderado"
+              : "Peligroso"}
           </p>
         </div>
       </div>
