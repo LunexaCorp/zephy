@@ -1,4 +1,4 @@
-import Sensors from '../models/sensorData.js';
+import Sensors from "../models/sensorData.js";
 
 export async function getSensors(req, res) {
   try {
@@ -7,33 +7,35 @@ export async function getSensors(req, res) {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+}
 
-// GET /api/sensors/:id
-// Esta función busca un sensor específico por su ID.
+
 export async function getSensorById(req, res) {
   try {
     const sensor = await Sensors.findById(req.params.id);
 
     if (!sensor) {
-      return res.status(404).json({ error: `No se encontró el sensor con el id: ${req.params.id}` });
+      return res
+        .status(404)
+        .json({
+          error: `No se encontró el sensor con el id: ${req.params.id}`,
+        });
     }
     res.status(200).json(sensor);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+}
 
 export async function addSensorData(data) {
   const { sensorId, temperature, co2, airQuality, uvIndex } = data;
 
   try {
-    const sensor = await Sensors.findById(sensorId);
+    const sensor = await Sensors.findOne({ deviceId: sensorId });
     if (!sensor) {
       throw new Error("Sensor no encontrado.");
     }
 
-    // ✅ Solución: Crear un objeto de datos solo con los campos que tienen valor
     const newData = { lastUpdate: new Date() };
 
     if (temperature !== null) newData.temperature = temperature;
@@ -41,7 +43,7 @@ export async function addSensorData(data) {
     if (airQuality !== null) newData.airQuality = airQuality;
     if (uvIndex !== null) newData.uvIndex = uvIndex;
 
-    // ⚡ evitar duplicados: revisamos el último dato guardado
+    // evitar duplicados: revisamos el último dato guardado
     const lastEntry = sensor.sensorData[sensor.sensorData.length - 1];
 
     if (
@@ -65,14 +67,16 @@ export async function addSensorData(data) {
   }
 }
 
-
 // Handler HTTP, usa addSensorData internamente
 export async function addSensorDataHttp(req, res) {
   try {
     const newData = await addSensorData(req.body);
     res
       .status(201)
-      .json({ message: "Datos del sensor agregados correctamente", data: newData });
+      .json({
+        message: "Datos del sensor agregados correctamente",
+        data: newData,
+      });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
