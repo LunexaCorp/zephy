@@ -34,7 +34,7 @@ const MapPage = () => {
 
         const locationsWithData = await Promise.all(
           locations.map(async (loc) => {
-            // 💡 CAMBIO: Accede a la propiedad `sensorData` del objeto de respuesta
+            //CAMBIO: Accede a la propiedad `sensorData` del objeto de respuesta
             const response = await getSingleDashboardData(loc._id);
             const sensorData = response.sensorData || {};
 

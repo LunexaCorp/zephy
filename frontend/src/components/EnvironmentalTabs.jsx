@@ -124,7 +124,7 @@ const EnvironmentalTabs = ({ sensorData }) => {
 
   if (tabs.length === 0) return null;
 
-  // Orden preferido de pestañas en español
+  // Orden preferido de pestañas
   const tabOrder = ["calidadAire", "temperature", "co2"];
   const orderedTabs = tabOrder.filter((type) => tabs.includes(type));
 

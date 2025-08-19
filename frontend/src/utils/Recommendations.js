@@ -41,7 +41,7 @@ export const getEnvironmentalRecommendations = (sensorData) => {
   if (airQuality < 40) {
     recommendations.push({
       id: "air-danger",
-      type: "calidadAire", // Cambiado a español
+      type: "calidadAire",
       message: `Calidad del aire PELIGROSA (${airQuality}/100). Evita actividades al exterior y cierra ventanas. Personas sensibles deben extremar precauciones.`,
       severity: "high",
       priority: 1,
@@ -49,7 +49,7 @@ export const getEnvironmentalRecommendations = (sensorData) => {
   } else if (airQuality < 70) {
     recommendations.push({
       id: "air-moderate",
-      type: "calidadAire", // Cambiado a español
+      type: "calidadAire",
       message: `Calidad del aire moderada (${airQuality}/100). Personas sensibles deben reducir actividad física intensa al aire libre.`,
       severity: "medium",
       priority: 2,
@@ -57,7 +57,7 @@ export const getEnvironmentalRecommendations = (sensorData) => {
   } else {
     recommendations.push({
       id: "air-good",
-      type: "calidadAire", // Cambiado a español
+      type: "calidadAire",
       message: `Excelente calidad del aire (${airQuality}/100). ¡Aprovecha para ventilar y disfrutar del aire libre!`,
       severity: "low",
       priority: 3,
@@ -98,7 +98,7 @@ export const getEnvironmentalRecommendations = (sensorData) => {
 export const getOrganizedRecommendations = (sensorData) => {
   const recommendations = getEnvironmentalRecommendations(sensorData);
 
-  // Organizar por tipo (en español)
+  // Organizar por tipo
   const organized = {
     calidadAire: recommendations.filter((rec) => rec.type === "calidadAire"),
     temperature: recommendations.filter((rec) => rec.type === "temperature"),
@@ -108,7 +108,7 @@ export const getOrganizedRecommendations = (sensorData) => {
   return organized;
 };
 
-// Obtener el icono y título para cada tipo (en español)
+// Obtener el icono y título para cada tipo
 export const getCategoryInfo = (type) => {
   const categories = {
     calidadAire: {
@@ -173,5 +173,3 @@ export const getTypeIcon = (type) => {
   };
   return icons[type] || "ℹ️";
 };
-
-//----------------------------------------------------------------------------------------

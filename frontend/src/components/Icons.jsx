@@ -1,4 +1,5 @@
 import {
+  //Iconos para botones flotantes
   Trophy,
   Map,
   // Iconos de sensores
@@ -31,6 +32,7 @@ import {
 } from "lucide-react";
 
 export const Icons = {
+  // Iconos para botones flotantes
   trophy: Trophy,
   map: Map,
   // Sensores
