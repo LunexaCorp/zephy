@@ -3,6 +3,7 @@ import { PercentageCalculation } from "../utils/PercentageCalculation";
 import { useNavigate } from "react-router-dom";
 import { getLocations, getSingleDashboardData } from "../services/axios.js"; // Importamos las funciones del backend
 import Loader from "../components/Loader";
+import NotFound from "../components/NotFound.jsx";
 
 const RankingPage = () => {
   const navigate = useNavigate();
@@ -61,10 +62,10 @@ const RankingPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400 text-xl">{error}</div>
+      <div className="flex justify-center items-center w-screen h-screen">
+        <NotFound />
       </div>
-    );
+    )
   }
 
   return (
