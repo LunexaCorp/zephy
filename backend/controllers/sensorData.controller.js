@@ -1,8 +1,5 @@
 import Sensors from '../models/sensorData.js';
 
-// GET /api/sensors
-// Esta función ahora buscará el sensor y devolverá todo el documento,
-// incluyendo el sub-arreglo 'sensorData'.
 export async function getSensors(req, res) {
   try {
     const sensors = await Sensors.find();
@@ -27,34 +24,56 @@ export async function getSensorById(req, res) {
   }
 };
 
-// Buscará el sensor por su ID y agregará el nuevo objeto de dato al arreglo 'sensorData'.
-export async function addSensorData(req, res) {
-  const { sensorId, temperature, co2, airQuality } = req.body;
+export async function addSensorData(data) {
+  const { sensorId, temperature, co2, airQuality, uvIndex } = data;
 
   try {
     const sensor = await Sensors.findById(sensorId);
-
     if (!sensor) {
-      return res.status(404).json({ error: 'Sensor no encontrado.' });
+      throw new Error("Sensor no encontrado.");
     }
 
-    // Crea el nuevo objeto de dato
-    const newData = {
-      temperature,
-      co2,
-      airQuality,
-      lastUpdate: new Date()
-    };
+    // ✅ Solución: Crear un objeto de datos solo con los campos que tienen valor
+    const newData = { lastUpdate: new Date() };
 
-    // Agrega el nuevo dato al arreglo 'sensorData'
+    if (temperature !== null) newData.temperature = temperature;
+    if (co2 !== null) newData.co2 = co2;
+    if (airQuality !== null) newData.airQuality = airQuality;
+    if (uvIndex !== null) newData.uvIndex = uvIndex;
+
+    // ⚡ evitar duplicados: revisamos el último dato guardado
+    const lastEntry = sensor.sensorData[sensor.sensorData.length - 1];
+
+    if (
+      lastEntry &&
+      lastEntry.temperature === newData.temperature &&
+      lastEntry.co2 === newData.co2 &&
+      lastEntry.airQuality === newData.airQuality &&
+      lastEntry.uvIndex === newData.uvIndex
+    ) {
+      console.log("⏩ Lectura duplicada, no se guardó.");
+      return lastEntry;
+    }
+
+    // si no es duplicado, lo guardamos
     sensor.sensorData.push(newData);
-
-    // Guarda el documento actualizado en la base de datos
     await sensor.save();
 
-    res.status(201).json({ message: 'Datos del sensor agregados correctamente.', data: newData });
+    return newData;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}
 
+
+// Handler HTTP, usa addSensorData internamente
+export async function addSensorDataHttp(req, res) {
+  try {
+    const newData = await addSensorData(req.body);
+    res
+      .status(201)
+      .json({ message: "Datos del sensor agregados correctamente", data: newData });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+}
