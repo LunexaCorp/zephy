@@ -1,187 +1,238 @@
+
 import express, { json } from "express";
 import dotenv from "dotenv";
 import "./config/database.js";
 import pc from "picocolors";
-import { addSensorData } from "./controllers/sensorData.controller.js";
+import { addSensorData } from "./controllers/sensorReading.controller.js";
 import mqtt from "mqtt";
 import cors from "cors";
 
-import Device from './models/device.js';
-import Location from './models/location.js';
-import Sensors from './models/sensorData.js';
-import devicesRoutes from "./routes/devices.routes.js";
+import Device from './models/Device.js';
 import locationsRouter from "./routes/locations.router.js";
-import sensorDataRouter from "./routes/sensorData.router.js";
+import devicesRoutes from "./routes/devices.router.js";
+import sensorReadingRouter from "./routes/sensorReading.router.js";
 import dashboardRoutes from "./routes/dashboard.router.js";
 
-
-//cargar variables de entorno
 dotenv.config();
 
-const IO_USERNAME = process.env.IO_USERNAME;
-const IO_KEY = process.env.IO_KEY;
+const MQTT_BROKER_URL = process.env.MQTT_BROKER_URL;
+const MQTT_USERNAME = process.env.MQTT_USERNAME;
+const MQTT_PASSWORD = process.env.MQTT_PASSWORD;
+const MQTT_BROKER_PORT = process.env.MQTT_BROKER_PORT;
 
 const app = express();
 app.disable("x-powered-by");
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
-//-----middlewares
 app.use(json());
 app.use(cors());
 
-//-----rutas
 app.get("/", (req, res) => {
-  res.status(200).send("<h1>The server is running</h1>");
+  res.status(200).send("<h1>The Ecoroute Server is Running</h1>");
 });
 
 const apiRouter = express.Router();
 apiRouter.use("/devices", devicesRoutes);
 apiRouter.use("/dashboard", dashboardRoutes);
 apiRouter.use("/locations", locationsRouter);
-apiRouter.use("/sensordata", sensorDataRouter);
-app.use("/api", apiRouter);
+apiRouter.use("/readings", sensorReadingRouter);
+app.use("/api/v1", apiRouter);
+
+// MAPEO DE TOPICS A NOMBRES DE CAMPOS DEL MODELO
+const topicToFieldMap = {
+  'co2': 'co2',
+  'airquality': 'airQuality',
+  'temperature': 'temperature',
+  'uvindex': 'uvIndex'
+};
 
 // Búfers y timeouts
 let buffers = {};
 let timeouts = {};
-const TIMEOUT_MS = 60000;
-// Normalizado el arreglo a minúsculas para consistencia
-const sensorTypes = ["co2", "airquality", "temperature", "uvindex"];
+const TIMEOUT_MS = 60000; // 60 segundos
 
-// Función asíncrona para inicializar el servidor y MQTT
 const init = async () => {
   try {
     console.log(pc.green("Iniciando el servidor..."));
 
-    // Obtener todos los dispositivos y sus ubicaciones
-    const devices = await Device.find({ isEnabled: true }).populate('locationId');
+    const devices = await Device.find({ isEnabled: true }).populate('location');
 
     if (devices.length === 0) {
-      console.warn(pc.yellow("No se encontraron dispositivos habilitados. El servidor se iniciará, pero no se suscribirá a ningún feed MQTT."));
+      console.warn(pc.yellow("No se encontraron dispositivos habilitados."));
     }
 
-    // Mapeo dinámico de topics
     const topicToSensorMap = {};
     devices.forEach(device => {
-      // Normalizar el nombre de la ubicación a minúsculas y sin espacios o caracteres especiales
-      const locationName = device.locationId.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!device.location || !device.location.name) {
+        console.warn(pc.yellow(`Dispositivo ID ${device._id} no tiene ubicación válida.`));
+        return;
+      }
 
-      sensorTypes.forEach(sensorType => {
-        // Asegurarse de que el tipo de sensor también esté en minúsculas
-        const topic = `${IO_USERNAME}/feeds/${locationName}.${sensorType}`;
-        topicToSensorMap[topic] = device._id.toString(); // Usar el ID del dispositivo
+      const locationName = device.location.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      Object.keys(topicToFieldMap).forEach(sensorType => {
+        const topic = `${locationName}/${sensorType}`;
+        topicToSensorMap[topic] = device._id.toString();
       });
     });
 
-    const client = mqtt.connect("mqtts://io.adafruit.com", {
-      port: 8883,
-      username: IO_USERNAME,
-      password: IO_KEY,
-    });
+    if (!MQTT_BROKER_URL || !MQTT_USERNAME || !MQTT_PASSWORD) {
+      console.error(pc.red("Variables de conexión MQTT no definidas."));
+    } else {
+      const connectionUrl = MQTT_BROKER_URL.startsWith('mqtts://')
+        ? MQTT_BROKER_URL
+        : `mqtts://${MQTT_BROKER_URL}`;
 
-    // Lógica de suscripción y manejo de mensajes MQTT
-    client.on("connect", () => {
-      console.log(pc.green("Conectado a Adafruit IO a través de MQTT!"));
-      const topics = Object.keys(topicToSensorMap);
+      const client = mqtt.connect(connectionUrl, {
+        port: parseInt(MQTT_BROKER_PORT),
+        username: MQTT_USERNAME,
+        password: MQTT_PASSWORD,
+        protocol: 'mqtts'
+      });
 
-      if (topics.length > 0) {
-        client.subscribe(topics, (err) => {
-          if (!err) {
-            console.log(pc.cyan(`Suscrito a los feeds:`));
-            topics.forEach((t) => console.log(pc.cyan(` - ${t}`)));
+      client.on("connect", () => {
+        console.log(pc.green("Conectado al Broker MQTT (HiveMQ)!"));
+        const topics = Object.keys(topicToSensorMap);
+
+        if (topics.length > 0) {
+          client.subscribe(topics, (err) => {
+            if (!err) {
+              console.log(pc.cyan(`Suscrito a ${topics.length} feeds:`));
+              topics.forEach(t => console.log(pc.cyan(`   - ${t}`)));
+            } else {
+              console.error(pc.red("Error al suscribirse:"), err);
+            }
+          });
+        } else {
+          console.warn(pc.yellow("No hay feeds a los que suscribirse."));
+        }
+      });
+
+      client.on("message", async (topic, message) => {
+        console.log(pc.blue(`Mensaje recibido: ${topic} = ${message.toString()}`));
+
+        try {
+          const value = parseFloat(message.toString());
+          const deviceId = topicToSensorMap[topic];
+
+          if (!deviceId) {
+            console.warn(pc.yellow(`Topic no reconocido: ${topic}`));
+            return;
+          }
+
+          // Inicializar buffer con campos correctos
+          if (!buffers[deviceId]) {
+            buffers[deviceId] = {
+              temperature: null,
+              co2: null,
+              airQuality: null,
+              uvIndex: null
+            };
+          }
+
+          const buffer = buffers[deviceId];
+
+          // ✅ Extraer tipo de sensor del topic
+          const topicParts = topic.split('/');
+          const sensorTypeFromTopic = topicParts[topicParts.length - 1].toLowerCase();
+
+          // ✅ MAPEAR el tipo del topic al nombre del campo correcto
+          const fieldName = topicToFieldMap[sensorTypeFromTopic];
+
+          if (fieldName) {
+            buffer[fieldName] = value;
+            console.log(pc.magenta(`   Buffer actualizado para ${deviceId}: ${fieldName} = ${value}`));
           } else {
-            console.error(pc.red("❌ Error al suscribirse a los feeds:"), err);
+            console.warn(pc.yellow(`Tipo de sensor no mapeado: ${sensorTypeFromTopic}`));
           }
-        });
-      } else {
-        console.warn(pc.yellow("No hay feeds a los que suscribirse."));
-      }
-    });
 
-    client.on("message", async (topic, message) => {
-      console.log(pc.yellow(`Mensaje recibido del feed ${topic}: ${message.toString()}`));
-
-      try {
-        const value = parseFloat(message.toString());
-        const sensorId = topicToSensorMap[topic];
-
-        if (!sensorId) {
-          console.warn("Topic no reconocido:", topic);
-          return;
-        }
-
-        if (!buffers[sensorId]) {
-          buffers[sensorId] = { temperature: null, co2: null, airQuality: null, uvIndex: null };
-        }
-
-        const buffer = buffers[sensorId];
-        const topicName = topic.split('/').pop().toLowerCase();
-
-        if (topicName.includes("temperature")) {
-          buffer.temperature = value;
-        } else if (topicName.includes("co2")) {
-          buffer.co2 = value;
-        } else if (topicName.includes("airquality")) {
-          buffer.airQuality = value;
-        } else if (topicName.includes("uvindex")) {
-          buffer.uvIndex = value;
-        }
-
-        if (timeouts[sensorId]) {
-          clearTimeout(timeouts[sensorId]);
-        }
-
-        timeouts[sensorId] = setTimeout(async () => {
-          console.log(pc.yellow(`⌛ Timeout para el sensor ${sensorId}. Guardando datos parciales.`));
-          const dataToSave = {
-            sensorId,
-            temperature: buffer.temperature,
-            co2: buffer.co2,
-            airQuality: buffer.airQuality,
-            uvIndex: buffer.uvIndex,
-          };
-          await addSensorData(dataToSave);
-
-          buffers[sensorId] = { temperature: null, co2: null, airQuality: null, uvIndex: null };
-          delete timeouts[sensorId];
-        }, TIMEOUT_MS);
-
-        if (buffer.temperature !== null && buffer.co2 !== null && buffer.airQuality !== null && buffer.uvIndex !== null) {
-          const dataToSave = {
-            sensorId,
-            temperature: buffer.temperature,
-            co2: buffer.co2,
-            airQuality: buffer.airQuality,
-            uvIndex: buffer.uvIndex,
-          };
-          const newData = await addSensorData(dataToSave);
-          console.log(pc.green("✅ Datos completos guardados en MongoDB:"), newData);
-
-          buffers[sensorId] = { temperature: null, co2: null, airQuality: null, uvIndex: null };
-          if (timeouts[sensorId]) {
-            clearTimeout(timeouts[sensorId]);
-            delete timeouts[sensorId];
+          // Limpiar timeout anterior
+          if (timeouts[deviceId]) {
+            clearTimeout(timeouts[deviceId]);
           }
-        }
-      } catch (err) {
-        console.error(pc.red("❌ Error al guardar datos en MongoDB:"), err);
-      }
-    });
 
-    client.on("error", (err) => {
-      console.error(pc.red("❌ Error en la conexión MQTT con Adafruit IO:"), err);
-    });
+          // Nuevo timeout para datos parciales
+          timeouts[deviceId] = setTimeout(async () => {
+            console.log(pc.yellow(`⌛ Timeout para dispositivo ${deviceId}. Guardando datos parciales...`));
+            console.log(pc.yellow(`   Datos: ${JSON.stringify(buffer)}`));
+
+            const dataToSave = {
+              deviceId,
+              temperature: buffer.temperature,
+              co2: buffer.co2,
+              airQuality: buffer.airQuality,
+              uvIndex: buffer.uvIndex,
+            };
+
+            try {
+              await addSensorData(dataToSave);
+              console.log(pc.green( `Datos parciales guardados`));
+            } catch (err) {
+              console.error(pc.red(`Error al guardar datos parciales: ${err.message}`));
+            }
+
+            buffers[deviceId] = { temperature: null, co2: null, airQuality: null, uvIndex: null };
+            delete timeouts[deviceId];
+          }, TIMEOUT_MS);
+
+          // Verificar si el buffer está completo
+          const isComplete = Object.values(buffer).every(val => val !== null);
+          console.log(pc.cyan(`   Buffer completo: ${isComplete}`));
+          console.log(pc.cyan(`   Estado actual: ${JSON.stringify(buffer)}`));
+
+          if (isComplete) {
+            const dataToSave = {
+              deviceId,
+              temperature: buffer.temperature,
+              co2: buffer.co2,
+              airQuality: buffer.airQuality,
+              uvIndex: buffer.uvIndex,
+            };
+
+            console.log(pc.green(`Guardando datos completos: ${JSON.stringify(dataToSave)}`));
+
+            try {
+              const newData = await addSensorData(dataToSave);
+              console.log(pc.green("Datos completos guardados en MongoDB"), newData);
+            } catch (err) {
+              console.error(pc.red(`Error al guardar: ${err.message}`));
+            }
+
+            // Limpiar buffer y timeout
+            buffers[deviceId] = { temperature: null, co2: null, airQuality: null, uvIndex: null };
+            if (timeouts[deviceId]) {
+              clearTimeout(timeouts[deviceId]);
+              delete timeouts[deviceId];
+            }
+          }
+        } catch (err) {
+          console.error(pc.red("Error al procesar mensaje MQTT:"), err);
+        }
+      });
+
+      client.on("error", (err) => {
+        console.error(pc.red("Error en conexión MQTT:"), err);
+      });
+
+      client.on("close", () => {
+        console.log(pc.yellow("Conexión MQTT cerrada"));
+      });
+
+      client.on("offline", () => {
+        console.log(pc.yellow("⚠Cliente MQTT offline"));
+      });
+    }
 
     app.use((req, res) => {
       res.status(404).send("404 Not Found");
     });
 
     app.listen(port, () => {
-      console.log(pc.green(`Server is running on port ${port}`));
+      console.log(pc.green(`Server corriendo en puerto ${port}`));
     });
 
   } catch (err) {
-    console.error(pc.red("❌ Error al iniciar el servidor:"), err);
+    console.error(pc.red("Error al iniciar servidor:"), err);
     process.exit(1);
   }
 };
