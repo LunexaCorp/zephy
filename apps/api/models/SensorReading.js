@@ -16,12 +16,9 @@ const sensorReadingSchema = new mongoose.Schema({
   // Datos Ambientales
   temperature: { type: Number, required: true },
   humidity: { type: Number },
-  co2: { type: Number }, // Sugiero un nombre más específico si es el MQ135 'AirQualityRaw'
+  co2: { type: Number },
   airQuality: { type: Number },
   uvIndex: { type: Number },
-  noiseLevel: { type: Number },
-  distance: { type: Number },
-  // ... cualquier otro dato del sensor
 });
 
 // Índice compuesto para optimizar las consultas de series de tiempo
