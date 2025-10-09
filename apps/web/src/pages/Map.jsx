@@ -43,7 +43,7 @@ const MapPage = () => {
               id: loc._id,
               name: loc.name,
               description: loc.description,
-              position: parseCoordinates(loc.latitud, loc.longitud),
+              position: parseCoordinates(loc.coordinates.latitude, loc.coordinates.longitude),
               img: loc.img,
               percentage,
               color: getColorByPercentage(percentage),
