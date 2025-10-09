@@ -1,5 +1,5 @@
 // components/LocationForm.tsx
-"use client"; // Necesario para usar useState y manejar el estado del formulario
+"use client";
 
 import React, { useState } from "react";
 import FormField from "./FormField";
@@ -12,63 +12,78 @@ const LocationMap = dynamic(() => import('../LocationMap'), {
   loading: () => <div className="h-80 w-full bg-gray-700 flex items-center justify-center text-white rounded-md">Cargando Mapa...</div>
 });
 
-// Define el tipo de datos de la ubicación
+// Define el tipo de datos de la ubicación (CORREGIDO)
 interface LocationData {
   id?: string;
   name: string;
   description: string;
   img: string;
-  latitud: string;
-  longitud: string;
+  coordinates: {
+    latitude: string;
+    longitude: string;
+  };
 }
 
 interface LocationFormProps {
-  // Los datos iniciales pueden ser null si es un formulario de "Crear"
   initialData: LocationData | null;
-  // Prop para controlar si es solo de visualización o de edición
   isEditing: boolean;
 }
 
 export default function LocationForm({
-  initialData,
-  isEditing,
-}: LocationFormProps) {
+                                       initialData,
+                                       isEditing,
+                                     }: LocationFormProps) {
   const router = useRouter();
 
-  // 1. Estado para almacenar los datos del formulario
+  // 1. Estado para almacenar los datos del formulario (CORREGIDO)
   const [formData, setFormData] = useState<LocationData>(
     initialData || {
       name: "",
       description: "",
       img: "",
-      latitud: "",
-      longitud: "",
+      coordinates: {
+        latitude: "",
+        longitude: "",
+      },
     }
   );
 
-  // 2. Estado para manejar la carga (deshabilitar el botón)
   const [isLoading, setIsLoading] = useState(false);
 
-  // 3. Manejador de cambios
+  // 3. Manejador de cambios (CORREGIDO para campos normales)
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    // Si es latitude o longitude, actualizar dentro de coordinates
+    if (name === "latitude" || name === "longitude") {
+      setFormData({
+        ...formData,
+        coordinates: {
+          ...formData.coordinates,
+          [name]: value,
+        },
+      });
+    } else {
+      // Para otros campos (name, description, img)
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
-  // 4. Manejador de envío (CREATE o UPDATE)
+  // 4. Manejador de envío
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEditing) return; // Si no está editando, no debe enviar
+    if (!isEditing) return;
 
     setIsLoading(true);
 
     const apiPath = formData.id
-      ? `/api/locations/${formData.id}` // Ruta para UPDATE
-      : "/api/locations"; // Ruta para CREATE
+      ? `/api/locations/${formData.id}`
+      : "/api/locations";
 
     const method = formData.id ? "PUT" : "POST";
 
@@ -90,7 +105,6 @@ export default function LocationForm({
           showConfirmButton: false,
           timer: 1500,
         });
-        // Redirigir al listado después de guardar
         router.push("/locations");
         router.refresh();
       } else {
@@ -108,23 +122,24 @@ export default function LocationForm({
     }
   };
 
-  // 5. NUEVO: Manejador de cambio de coordenadas desde el mapa
+  // 5. Manejador de cambio de coordenadas desde el mapa (CORREGIDO)
   const handleCoordinatesChange = (lat: string, lng: string) => {
     setFormData((prev) => ({
       ...prev,
-      latitud: lat,
-      longitud: lng,
+      coordinates: {
+        latitude: lat,
+        longitude: lng,
+      },
     }));
   };
 
-  // Determina el título y si los campos están deshabilitados
   const title = initialData
     ? isEditing
       ? "Editar Ubicación"
       : "Ver Detalles de Ubicación"
     : "Crear Nueva Ubicación";
 
-  const disabledFields = !isEditing && initialData; // Deshabilitar si está en modo "Ver"
+  const disabledFields = !isEditing && initialData;
 
   return (
     <form
@@ -154,33 +169,32 @@ export default function LocationForm({
         />
         <FormField
           label="Latitud"
-          id="latitud"
-          name="latitud"
-          value={formData.latitud}
-          type="text" // Usar 'text' para permitir la coma/punto como separador decimal
+          id="latitude"
+          name="latitude"
+          value={formData.coordinates.latitude}
+          type="text"
           onChange={handleChange}
           disabled={disabledFields}
         />
         <FormField
           label="Longitud"
-          id="longitud"
-          name="longitud"
-          value={formData.longitud}
+          id="longitude"
+          name="longitude"
+          value={formData.coordinates.longitude}
           type="text"
           onChange={handleChange}
           disabled={disabledFields}
         />
       </div>
 
-      {/* 6. CAMPO DE MAPA */}
+      {/* 6. CAMPO DE MAPA (CORREGIDO) */}
       <LocationMap
-        initialLat={formData.latitud}
-        initialLng={formData.longitud}
-        onCoordinatesChange={handleCoordinatesChange} // Callback para actualizar el estado
+        initialLat={formData.coordinates.latitude}
+        initialLng={formData.coordinates.longitude}
+        onCoordinatesChange={handleCoordinatesChange}
         disabled={disabledFields}
       />
 
-      {/* Campo de descripción usa textarea */}
       <FormField
         label="Descripción"
         id="description"
@@ -191,7 +205,6 @@ export default function LocationForm({
         disabled={disabledFields}
       />
 
-      {/* 5. Botón de acción (Solo visible y funcional si está en modo Edición/Creación) */}
       {isEditing && (
         <div className="mt-6">
           <button
@@ -202,13 +215,12 @@ export default function LocationForm({
             {isLoading
               ? "Guardando..."
               : formData.id
-              ? "Guardar Cambios"
-              : "Crear Ubicación"}
+                ? "Guardar Cambios"
+                : "Crear Ubicación"}
           </button>
         </div>
       )}
 
-      {/* Botón de volver */}
       <div className="mt-4">
         <button
           type="button"
