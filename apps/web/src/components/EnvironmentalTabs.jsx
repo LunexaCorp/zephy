@@ -3,8 +3,8 @@ import {
   getOrganizedRecommendations,
   getCategoryInfo,
   getSeverityStyle,
-} from "../utils/Recommendations";
-import { Icon } from "./Icons";
+} from "../utils/Recommendations.js";
+import { Icon } from "./Icons.jsx";
 
 const TabButton = ({ active, onClick, title, hasRecommendations }) => {
   const categoryInfo = getCategoryInfo(title);

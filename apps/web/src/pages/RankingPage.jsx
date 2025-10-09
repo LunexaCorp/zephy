@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { PercentageCalculation } from "../utils/PercentageCalculation";
+import { PercentageCalculation } from "../utils/PercentageCalculation.js";
 import { useNavigate } from "react-router-dom";
-import { getLocations, getSingleDashboardData } from "../services/axios.js"; // Importamos las funciones del backend
-import Loader from "../components/Loader";
+import { getLocations, getSingleDashboardData } from "../services/axios.js"; // Importamos las funciones del api
+import Loader from "../components/Loader.jsx";
 
 const RankingPage = () => {
   const navigate = useNavigate();

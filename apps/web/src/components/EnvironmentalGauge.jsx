@@ -1,7 +1,7 @@
 import { GaugeComponent } from "react-gauge-component";
 import { PercentageCalculation } from "../utils/PercentageCalculation.js";
 import { useState, useEffect } from "react";
-import { Icon } from "./Icons";
+import { Icon } from "./Icons.jsx";
 
 export const EnvironmentalGauge = ({ data }) => {
   const [animatedValue, setAnimatedValue] = useState(0);

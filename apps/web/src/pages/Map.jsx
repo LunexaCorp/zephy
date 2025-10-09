@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import MapwithLocations from "../components/MapwithLocations";
+import MapwithLocations from "../components/MapwithLocations.jsx";
 import { getLocations, getSingleDashboardData } from "../services/axios.js";
 import {
   PercentageCalculation,
   getColorByPercentage,
 } from "../utils/PercentageCalculation.js";
-import LocationCard from "../components/LocationCard";
-import FilterPanel from "../components/FilterPanel";
+import LocationCard from "../components/LocationCard.jsx";
+import FilterPanel from "../components/FilterPanel.jsx";
 
 const MapPage = () => {
   const [processedLocations, setProcessedLocations] = useState([]);

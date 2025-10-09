@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { EnvironmentalGauge } from "../components/EnvironmentalGauge";
-import EnvironmentalTabs from "../components/EnvironmentalTabs";
-import TipsCarousel from "../components/TipsCarousel";
+import { EnvironmentalGauge } from "../components/EnvironmentalGauge.jsx";
+import EnvironmentalTabs from "../components/EnvironmentalTabs.jsx";
+import TipsCarousel from "../components/TipsCarousel.jsx";
 import { Icon } from "../components/Icons.jsx";
 
-import { DataItem } from "../components/DataItem";
+import { DataItem } from "../components/DataItem.jsx";
 
 import Loader from "../components/Loader.jsx";
 // Importa el nuevo componente para la imagen

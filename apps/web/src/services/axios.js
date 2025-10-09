@@ -1,9 +1,9 @@
-import axios from "axios";
+import axios from "axios"
 
 // Configuración para desarrollo/producción
 const baseURL = import.meta.env.PROD
-  ? `${import.meta.env.VITE_BACKEND_BASE_URL}/api`
-  : `http://localhost:${import.meta.env.VITE_PORT}/api`;
+  ? `${import.meta.env.VITE_BACKEND_BASE_URL}/api/v1`
+  : `http://localhost:${import.meta.env.VITE_PORT}/api/v1`;
 
 const api = axios.create({
   baseURL,

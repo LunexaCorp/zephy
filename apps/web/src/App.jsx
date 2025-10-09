@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Measurer from "./pages/MeasurerPage";
-import Ranking from "./pages/RankingPage";
-import NavBar from "./components/NavBar";
-import MapPage from "./pages/Map";
-import NotFound from "./components/NotFound";
+import Home from "./pages/Home.jsx";
+import Measurer from "./pages/MeasurerPage.jsx";
+import Ranking from "./pages/RankingPage.jsx";
+import NavBar from "./components/NavBar.jsx";
+import MapPage from "./pages/Map.jsx";
+import NotFound from "./components/NotFound.jsx";
 
 const App = () => {
   return (
