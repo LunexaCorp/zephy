@@ -1,5 +1,5 @@
-import SensorReading from "../models/SensorReading.js"; // Usamos el nombre del modelo actualizado
-import Device from "../models/Device.js"; // Lo necesitamos para verificar el deviceId
+import SensorReading from "../models/SensorReading.js";
+import Device from "../models/Device.js";
 
 // 1. Obtener todas las lecturas (usar solo para testing/admin con cuidado)
 export async function getSensors(req, res) {
@@ -27,39 +27,23 @@ export async function getSensorById(req, res) {
   }
 }
 
-// 3. Lógica central para la ingesta de datos IoT
-// Esta función debe ser RAPIDÍSIMA.
 export async function addSensorData(data) {
-  // Asegúrate de que tu ESP32 envíe 'deviceId' y no 'sensorId' o algo diferente
   const { deviceId, temperature, co2, airQuality, uvIndex, noiseLevel, distance } = data;
 
   if (!deviceId) {
     throw new Error("El ID del dispositivo es obligatorio.");
   }
 
-  // Opcional: Podrías querer verificar si el dispositivo existe
-  /*
-  const deviceExists = await Device.findById(deviceId).lean();
-  if (!deviceExists) {
-     throw new Error("Dispositivo no encontrado.");
-  }
-  */
-
   try {
-    // 💡 EL CAMBIO CLAVE: CREAR UN NUEVO DOCUMENTO en lugar de actualizar un array
     const newReading = await SensorReading.create({
-      device: deviceId, // ✅ Usamos el campo 'device'
+      device: deviceId, // Usamos el campo 'device'
       timestamp: new Date(), // Usamos la hora del servidor (más fiable)
       temperature: temperature,
       co2: co2,
       airQuality: airQuality,
       uvIndex: uvIndex,
-      // Agrega otros campos de sensor si vienen en la data
-      noiseLevel: noiseLevel,
-      distance: distance,
     });
 
-    // Opcional: Actualizar el campo lastActivity en el dispositivo
     await Device.findByIdAndUpdate(deviceId, { lastActivity: new Date() });
 
 
@@ -67,7 +51,6 @@ export async function addSensorData(data) {
     return newReading;
 
   } catch (err) {
-    // Es vital que la lógica IoT maneje los errores adecuadamente
     throw new Error(`Error al guardar la lectura: ${err.message}`);
   }
 }
@@ -82,7 +65,6 @@ export async function addSensorDataHttp(req, res) {
       data: newReading,
     });
   } catch (err) {
-    // En el contexto de IoT, un error 400 (Bad Request) o 500 (Server Error) es apropiado
     res.status(500).json({ error: err.message });
   }
 }

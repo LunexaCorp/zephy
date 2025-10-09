@@ -1,48 +1,59 @@
-//import Devices from '../tests/data/devices.json' with { type: 'json' };
-import Device from '../models/device.js';
-import Sensor from '../models/sensorData.js';
+import Device from '../models/Device.js';
+import SensorReading from '../models/SensorReading.js';
 
-//2. rescata los datos de la base de datos y los devuelve en un json
+// 1. Obtener todos los dispositivos, poblando la ubicación
 export async function getDevices(req, res) {
   try{
-    const devices = await Device.find();
+    const devices = await Device.find().populate('location'); // ✅ Usamos 'location'
     res.status(200).json(devices);
   }catch(err){
-    res.status(500).json({error: err});
+    // Es mejor devolver el error.message en lugar del objeto error
+    res.status(500).json({error: err.message});
   }
 };
 
+// 2. Obtener un dispositivo por ID, poblando la ubicación
 export async function getDeviceById(req, res) {
   try{
-    const device = await Device.findById(req.params.id);
+    const device = await Device.findById(req.params.id).populate('location'); // ✅ Usamos 'location'
 
     if(!device)
       return res.status(404).json({error: `No se encontró el dispositivo con el id: ${req.params.id}`});
     res.status(200).json(device);
   }catch(err){
-    res.status(500).json({error: err});
+    res.status(500).json({error: err.message});
   }
 };
 
+// 3. Obtener TODAS las lecturas de un dispositivo
 export async function getSensorsByDeviceId(req, res) {
   try{
     const { deviceId } = req.params;
-    const sensors = await Sensor.find({deviceId});
-    res.status(200).json(sensors);
+    // El campo de referencia ahora se llama 'device'
+    const readings = await SensorReading.find({ device: deviceId }).sort({ timestamp: -1 });
+    res.status(200).json(readings);
   }catch(err){
-    res.status(500).json({error: err});
+    res.status(500).json({error: err.message});
   }
 }
 
-//Traer los ultimos datos lanzados por los sensores
-/*export async function getLastDataByDeviceId(req, res) {
+// 4. Traer los ultimos datos lanzados por los sensores (Función activada y mejorada)
+export async function getLastDataByDeviceId(req, res) {
   try{
     const { deviceId } = req.params;
-    const sensors = await Sensor.find({deviceId});
-    res.status(200).json(sensors);
-    const last = sensors.
+
+    // Busca y devuelve solo el documento más reciente
+    const latestReading = await SensorReading.findOne({ device: deviceId })
+      .sort({ timestamp: -1 })
+      .limit(1)
+      .exec();
+
+    if (!latestReading) {
+      return res.status(404).json({ error: "No se encontraron datos para este dispositivo." });
+    }
+
+    res.status(200).json(latestReading);
   }catch(err){
-    res.status(500).json({error: err});
+    res.status(500).json({error: err.message});
   }
 }
-  */
