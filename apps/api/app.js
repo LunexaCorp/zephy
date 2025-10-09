@@ -25,7 +25,15 @@ app.disable("x-powered-by");
 const port = process.env.PORT || 3000;
 
 app.use(json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://yzephy.vercel.app", // tu dominio en producción (Vercel)
+    "http://localhost:5173",     // tu entorno local con Vite
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
 
 app.get("/", (req, res) => {
   res.status(200).send("<h1>The Ecoroute Server is Running</h1>");
