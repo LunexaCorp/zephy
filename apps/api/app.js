@@ -27,8 +27,8 @@ const port = process.env.PORT || 3000;
 app.use(json());
 app.use(cors({
   origin: [
-    "https://yzephy.vercel.app", // tu dominio en producción (Vercel)
-    "http://localhost:5173",     // tu entorno local con Vite
+    "https://zephy-mdd.vercel.app", //dominio en producción
+    "http://localhost:5173",     // entorno local
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
