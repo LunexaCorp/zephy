@@ -1,5 +1,3 @@
-// src/app/locations/page.tsx
-
 import AddButton from "@/app/components/AddButton";
 // 💡 Solo importamos el Data Provider
 import LocationDataProvider from "@/app/components/LocationDataProvider";

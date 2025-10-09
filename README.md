@@ -1,81 +1,32 @@
-# 🌱 Proyecto Ecoroute
+# Proyecto Zephy :)
 
-Ecoroute es una plataforma de monitoreo ambiental urbano basada en IoT (Internet de las Cosas), desarrollada para evaluar y visualizar en tiempo real la calidad del ambiente en distintos puntos estratégicos de Puerto Maldonado / Tambopata.
+---
+Hola! Este es un proyecto universitario desarrollado por [yohanvillarp](https://github.com/yohanvillarp) y [francoyupanqui](https://github.com/francoyupanqui).
 
-El proyecto busca fomentar la conciencia ambiental y ofrecer a los ciudadanos información útil para decidir si es conveniente visitar ciertos lugares de la ciudad, además de brindar acceso a datos detallados para usuarios más técnicos.
+Pertenecemos a la [UNAMAD](https://www.unamad.edu.pe/), ubicada en la ciudad de Puerto Maldonado.
 
-### 📍 ¿Qué hace Ecoroute?
-- Se instalan módulos ESP32 en ubicaciones estratégicas (Plaza de Armas, Plaza Bolognesi, etc.).
+Este proyecto nace de la combinación de dos áreas: Desarrollo de software e IOT.
 
-- Cada módulo recopila datos de sensores ambientales.
+## IOT
 
-- Los datos se transmiten vía red a un servidor central.
+Empezamos con sensores sencillos acompañados de un ESP32, que envían datos a través de MQTT. Si bien los brokers MQTT ya cuentan con dashboards integrados que podemos moldear a nuestro antojo... Quisimos ir más allá. ¿Por qué conformarnos con lo que ya existe? Decidimos crear nuestra propia página web personalizada para visualizar y aprovechar esos datos de una manera única.
 
-- La información se muestra en una interfaz web interactiva.
+## Desarrollo de software
 
-## 🧩 Componentes utilizados
+Aquí es donde la cosa se puso interesante. Teníamos claro que queríamos algo escalable, algo que no se limitara a un solo sensor en un solo lugar. ¿Y si queríamos monitorear diferentes puntos de la ciudad? ¿Diferentes localidades?
 
-### 🔌 Dispositivo base
-ESP32S 38P NodeMCU (USB Tipo C)
-Microcontrolador principal con conectividad WiFi para transmitir datos desde los sensores.
+Así que construimos dos cosas:
 
-### 🌡️ Sensores ambientales disponibles (Temporal)
-| Sensor     | Función                                                                                        | Relevancia                                                                           |
-|------------|------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| **MQ135**  | Detección de calidad del aire: gases como amoníaco, dióxido de carbono, alcohol, benceno, etc. | Principal indicador de calidad del aire                                              |
-| **DHT11**  | Sensor de temperatura y humedad                                                                | Ayuda a contextualizar el entorno                                                    |
-| **KY-037** | Sensor de sonido                                                                               | Mide niveles de ruido ambiental                                  |
-| **BH1750** | Sensor de intensidad lumínica (lux)                                                            | Evalúa luminosidad del lugar, útil para predicciones de visibilidad                  |
-| **HC-SR04**| Sensor ultrasónico de distancia                                                                | Para proyectos futuros relacionados con flujo de personas                  |
+**La plataforma principal** - Hecha con **React** y **Node.js**. Aquí es donde la gente ve los datos en tiempo real, los gráficos, todo lo visual. Simple, rápida, funcional.
 
+**El CMS de gestión** - Lo construimos con **Next.js**. Básicamente es nuestro panel de control donde podemos agregar nuevas localidades, configurar sensores, gestionar todo el sistema sin tocar código.
 
-## 🖥️ Tecnologías usadas
+## ¿Por qué Zephy?
 
-| Área                          | Tecnología                          |
-|-------------------------------|-------------------------------------|
-| **Frontend**                  | React + TailwindCSS                 |
-| **Backend**                   | Node.js (Express)                   |
-| **Base de datos**             | MongoDB                             |
-| **IoT**                       | ESP32, sensores varios              |
-| **Protocolo de comunicación** | HTTP / MQTT (Aún planeandose)       |
+Puerto Maldonado es conocida por su clima tropical, y el calor puede ser... intenso. Muy intenso. Tanto que muchas personas prefieren quedarse en casa antes que enfrentar las altas temperaturas.
 
+¿Turistas explorando la ciudad? Claro, pero ¿salir a caminar bajo un sol abrasador? ¿Hacer ejercicio al aire libre sin saber si es seguro?
 
-## 📊 Visualización de datos
-La interfaz web incluye:
+Ahí es donde nace Zephy: un sistema que monitorea las condiciones climáticas en tiempo real para que las personas puedan decidir cuál es el mejor momento para salir, hacer ejercicio, o simplemente planificar su día sin sufrir innecesariamente por el calor.
 
-- Estado ambiental en tiempo real por ubicación
-
-- Recomendaciones (¿Es buena idea ir?)
-
-- Gráficas históricas de temperatura, humedad y calidad del aire
-
-- Sección técnica para usuarios avanzados (datos crudos, exportación, etc.)
-
-## 🧠 Futuras implementaciones
-
-### 🔮 Series Temporales & LSTM
-Queremos aplicar modelos de predicción basados en LSTM (Long Short-Term Memory) para:
-
-- Anticipar picos de contaminación
-
-- Generar alertas tempranas
-
-- Analizar patrones a lo largo del día o semana
-
-### 🧪 Análisis de gases específicos
-Sensores como el MQ135 permiten detectar gases como:
-
-- Metano (CH₄)
-
-- Monóxido de carbono (CO)
-
-- Dióxido de carbono (CO₂)
-
-La idea es ofrecer información sobre estos contaminantes de forma clara para la ciudadanía, y más detallada para investigadores o tomadores de decisiones.
-
-### 📌 Notas adicionales
-- El sistema está diseñado para ser escalable. Se pueden agregar nuevos puntos de monitoreo fácilmente.
-
-- En futuras versiones se planea usar MQTT para mejorar eficiencia de transmisión.
-
-- El sistema considera la privacidad de los usuarios. No se recopilan datos personales.
+---
