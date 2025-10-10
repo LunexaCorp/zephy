@@ -10,11 +10,10 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// --- Funciones para obtener datos de la API ---
+// Funciones para obtener datos de la API
 export const getLocations = async () => {
   try {
     const response = await api.get("/locations");
-    console.log("Fetched locations:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching locations:", error);

@@ -5,7 +5,7 @@ export const Tips = (sensorData) => {
     {
       id: "explanation",
       type: "education",
-      icon: "📚",
+      icon: "book",
       title: "¿Qué significan estos valores?",
       content:
         "Temperatura: Confort térmico. Calidad de Aire: Pureza del aire (0-100). CO₂: Concentración de dióxido de carbono. Valores altos indican mala ventilación.",
@@ -14,7 +14,7 @@ export const Tips = (sensorData) => {
     {
       id: "indoor-air",
       type: "tip",
-      icon: "🏠",
+      icon: "home",
       title: "Mejora el aire en interiores",
       content:
         "1. Ventila 10 min cada 3 horas. 2. Usa plantas purificadoras. 3. Evita productos químicos. 4. Mantén limpieza regular. 5. Controla humedad (40-60%).",
@@ -24,7 +24,7 @@ export const Tips = (sensorData) => {
     {
       id: "forecast",
       type: "forecast",
-      icon: "🔮",
+      icon: "sun",
       title: "Pronóstico ambiental",
       content:
         "En las próximas horas: Se espera una mejora gradual en la calidad del aire. La temperatura se mantendrá estable. Ideal para ventilar al mediodía.",
@@ -33,7 +33,7 @@ export const Tips = (sensorData) => {
     {
       id: "practical-tips",
       type: "tip",
-      icon: "💡",
+      icon: "idea",
       title: "Acciones prácticas inmediatas",
       content:
         "• Camina o usa bicicleta • Reduce uso de automóvil • Planta un árbol • Usa transporte público • Comparte vehículo • Consume localmente",
@@ -42,14 +42,14 @@ export const Tips = (sensorData) => {
     {
       id: "temp-tips",
       type: "tip",
-      icon: "🌡️",
+      icon: "temperature",
       title: "Confort térmico",
       content:
         temperature > 28
           ? "Hace calor: Usa ropa ligera, hidrátate, busca sombra y evita horas pico de sol."
           : temperature < 15
-          ? "Hace frío: Abrígate en capas, consume bebidas calientes y mantén actividad física."
-          : "Temperatura ideal: Aprovecha para actividades al aire libre.",
+            ? "Hace frío: Abrígate en capas, consume bebidas calientes y mantén actividad física."
+            : "Temperatura ideal: Aprovecha para actividades al aire libre.",
       severity: "advice",
     },
   ].filter((tip) => tip.condition !== false); // Filtramos tips condicionales no aplicables

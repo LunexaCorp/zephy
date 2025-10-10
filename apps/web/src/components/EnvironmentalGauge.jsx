@@ -15,8 +15,8 @@ export const EnvironmentalGauge = ({ data }) => {
   }, [data]);
 
   return (
-    <div className=" border-4 border-emerald-700 bg-gradient-to-tr from-gray-900 to-emerald-900 rounded-2xl p-6 h-96 flex flex-col items-center justify-center shadow-lg">
-      <div className="w-full max-w-xs">
+    <div className="h-full border-4 border-emerald-700 bg-gradient-to-tr from-gray-900 to-emerald-900 rounded-2xl p-6 flex flex-col items-center justify-center shadow-lg">
+    <div className="w-full max-w-xs">
         <GaugeComponent
           value={animatedValue}
           minValue={0}
