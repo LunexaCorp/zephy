@@ -1,95 +1,27 @@
-import { useState, useEffect } from "react";
 import MapwithLocations from "../components/MapwithLocations.jsx";
-import { getLocations, getSingleDashboardData } from "../services/axios.js";
-import {
-  PercentageCalculation,
-  getColorByPercentage,
-} from "../utils/PercentageCalculation.js";
 import LocationCard from "../components/LocationCard.jsx";
 import FilterPanel from "../components/FilterPanel.jsx";
+import useMapData from "../hooks/useMapData.js"; // Importar el nuevo hook
 
 const MapPage = () => {
-  const [processedLocations, setProcessedLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [filter, setFilter] = useState("all");
+  // 1. Obtener toda la lógica del custom hook
+  const {
+    loading,
+    error,
+    defaultCenter,
+    filteredLocations,
+    filter,
+    setFilter,
+    selectedLocation,
+    setSelectedLocation,
+  } = useMapData();
 
-  const defaultCenter = [-12.6, -69.185];
-
-  const parseCoordinates = (lat, lng) => {
-    try {
-      return [parseFloat(lat), parseFloat(lng)];
-    } catch {
-      return defaultCenter;
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const locations = await getLocations();
-
-        const locationsWithData = await Promise.all(
-          locations.map(async (loc) => {
-            //CAMBIO: Accede a la propiedad `sensorData` del objeto de respuesta
-            const response = await getSingleDashboardData(loc._id);
-            const sensorData = response.sensorData || {};
-
-            const percentage = PercentageCalculation(sensorData);
-
-            return {
-              id: loc._id,
-              name: loc.name,
-              description: loc.description,
-              position: parseCoordinates(loc.coordinates.latitude, loc.coordinates.longitude),
-              img: loc.img,
-              percentage,
-              color: getColorByPercentage(percentage),
-              radius: 80 + percentage / 2,
-              sensorData: {
-                temperature: sensorData.temperature ?? 0,
-                co2: sensorData.co2 ?? 0,
-                airQuality: sensorData.airQuality ?? 0,
-                lastUpdated: sensorData.lastUpdate
-                  ? new Date(sensorData.lastUpdate).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "N/A",
-              },
-            };
-          })
-        );
-
-        setProcessedLocations(locationsWithData);
-      } catch (err) {
-        setError("Error al cargar datos del mapa");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 120000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const filteredLocations = processedLocations.filter((loc) => {
-    if (filter === "all") return true;
-    if (filter === "healthy") return loc.percentage >= 70;
-    if (filter === "moderate")
-      return loc.percentage >= 40 && loc.percentage < 70;
-    if (filter === "critical") return loc.percentage < 40;
-    return true;
-  });
-
+  // 2. Manejo de errores (solo impresión en consola, como en el original)
   if (error) {
-    console.log("error temporal:"+error);
+    console.log("error temporal: " + error);
   }
 
+  // 3. Renderizado de la UI (mucho más limpio)
   return (
     <div className="relative h-screen w-full bg-gray-900">
       <div className="absolute inset-0 z-0">
@@ -129,7 +61,7 @@ const MapPage = () => {
             absolute z-10 pointer-events-auto
             bottom-4 left-8 transform -translate-x-px
             w-[calc(100%-2rem)] max-w-md
-            lg:left-4 lg:top-110 lg:transform lg:-translate-y-1/2 lg:bottom-auto
+            lg:left-4 lg:top-1/2 lg:transform lg:-translate-y-1/2 lg:bottom-auto
             transition-all duration-300
           `}
         >
@@ -140,6 +72,7 @@ const MapPage = () => {
         </div>
       )}
 
+      {/* Leyenda de Colores */}
       <div
         className={`
           absolute bottom-20 right-4 bg-black/70 backdrop-blur rounded-lg p-3 border border-gray-600 pointer-events-auto
@@ -161,6 +94,7 @@ const MapPage = () => {
         </div>
       </div>
 
+      {/* Indicador de Carga */}
       {loading && (
         <div className="absolute bottom-20 left-4 z-50 bg-black/80 text-white px-3 py-2 rounded-lg flex items-center space-x-2 animate-pulse">
           <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
