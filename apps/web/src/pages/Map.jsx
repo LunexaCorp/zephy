@@ -1,5 +1,5 @@
 import MapwithLocations from "../components/MapwithLocations.jsx";
-import LocationCard from "../components/LocationCard.jsx";
+import LocationCard from "../components/map/LocationCard.jsx";
 import FilterPanel from "../components/FilterPanel.jsx";
 import useMapData from "../hooks/useMapData.js"; // Importar el nuevo hook
 
