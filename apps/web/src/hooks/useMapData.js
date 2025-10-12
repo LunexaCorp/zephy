@@ -58,7 +58,7 @@ const useMapData = () => {
             radius: 80 + percentage / 2,
             sensorData: {
               temperature: sensorData.temperature ?? 0,
-              co2: sensorData.co2 ?? 0,
+              humidity: sensorData.humidity ?? 0,
               airQuality: sensorData.airQuality ?? 0,
               lastUpdated: sensorData.lastUpdate
                 ? new Date(sensorData.lastUpdate).toLocaleTimeString([], {

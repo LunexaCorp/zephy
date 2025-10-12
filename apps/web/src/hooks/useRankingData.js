@@ -22,7 +22,7 @@ export const useRankingData = () => {
               location: loc.name,
               img: loc.img,
               temperature: sensorData.temperature,
-              co2: sensorData.co2,
+              humidity: sensorData.humidity,
               airQuality: sensorData.airQuality,
               index: PercentageCalculation(sensorData),
             };
