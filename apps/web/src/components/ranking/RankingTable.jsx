@@ -86,7 +86,7 @@ const RankingTable = ({ rankingData }) => {
                   </div>
                   <div className="flex flex-col items-center">
                     <Factory size={16} className="text-red-400 mb-1" />
-                    <span>{loc.co2} ppm</span>
+                    <span>{loc.airQuality} ppm</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <Leaf size={16} className="text-emerald-400 mb-1" />

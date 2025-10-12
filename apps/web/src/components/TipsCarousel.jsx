@@ -144,8 +144,15 @@ const TipsCarousel = ({ sensorData }) => {
 
       {/* Tarjeta activa */}
       <div className="mb-6 min-h-[240px]">
-        <TipCard tip={tips[activeIndex]} isActive={true} />
+        {tips[activeIndex] ? (
+          <TipCard tip={tips[activeIndex]} isActive={true} />
+        ) : (
+          <div className="text-gray-400 text-center py-8">
+            No hay consejos disponibles.
+          </div>
+        )}
       </div>
+
 
       {/* Navegación */}
       <div className="flex items-center justify-between">

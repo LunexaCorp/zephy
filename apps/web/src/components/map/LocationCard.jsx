@@ -14,7 +14,7 @@ LocationCard.propTypes = {
     radius: PropTypes.number,
     sensorData: PropTypes.shape({
       temperature: PropTypes.number,
-      co2: PropTypes.number,
+      humidity: PropTypes.number,
       airQuality: PropTypes.number,
       lastUpdated: PropTypes.string,
     }),
@@ -57,9 +57,9 @@ export default function LocationCard({ location, onClose }) {
 
           <div className="flex flex-col items-center bg-gray-800/50 rounded p-2">
             <Cloud className="text-blue-400 mb-1" size={18} />
-            <span className="text-gray-400 text-xs">CO₂</span>
+            <span className="text-gray-400 text-xs">Humedad</span>
             <span className="font-bold text-white">
-              {location.sensorData.co2} ppm
+              {location.sensorData.humidity} %
             </span>
           </div>
 
@@ -67,7 +67,7 @@ export default function LocationCard({ location, onClose }) {
             <Wind className="text-green-400 mb-1" size={18} />
             <span className="text-gray-400 text-xs">Calidad Aire</span>
             <span className="font-bold text-white">
-              {location.sensorData.airQuality}/100
+              {location.sensorData.airQuality} ppm
             </span>
           </div>
         </div>

@@ -17,10 +17,10 @@ const TabButton = ({ active, onClick, title, hasRecommendations }) => {
         relative px-4 py-3 font-medium transition-all duration-300 flex items-center
         min-w-[120px] justify-center flex-1 group
         ${
-          active
-            ? "text-emerald-300 bg-emerald-500/10 border-b-2 border-emerald-400"
-            : "text-gray-400 hover:text-gray-300 hover:bg-gray-700/30"
-        }
+        active
+          ? "text-emerald-300 bg-emerald-500/10 border-b-2 border-emerald-400"
+          : "text-gray-400 hover:text-gray-300 hover:bg-gray-700/30"
+      }
         ${!hasRecommendations ? "opacity-50 cursor-not-allowed" : ""}
       `}
     >
@@ -66,8 +66,8 @@ const RecommendationCard = ({ recommendation }) => {
             recommendation.severity === "high"
               ? "bg-red-500/20"
               : recommendation.severity === "medium"
-              ? "bg-amber-500/20"
-              : "bg-emerald-500/20"
+                ? "bg-amber-500/20"
+                : "bg-emerald-500/20"
           }`}
         >
           <Icon
@@ -77,8 +77,8 @@ const RecommendationCard = ({ recommendation }) => {
               recommendation.severity === "high"
                 ? "text-red-400"
                 : recommendation.severity === "medium"
-                ? "text-amber-400"
-                : "text-emerald-400"
+                  ? "text-amber-400"
+                  : "text-emerald-400"
             }
           />
         </div>
@@ -92,8 +92,8 @@ const RecommendationCard = ({ recommendation }) => {
               {recommendation.severity === "high"
                 ? "Recomendación importante"
                 : recommendation.severity === "medium"
-                ? "Recomendación sugerida"
-                : "Condición favorable"}
+                  ? "Recomendación sugerida"
+                  : "Condición favorable"}
             </span>
           </div>
         </div>
@@ -104,28 +104,47 @@ const RecommendationCard = ({ recommendation }) => {
 
 const EnvironmentalTabs = ({ sensorData }) => {
   const [activeTab, setActiveTab] = useState("calidadAire");
-  const organizedRecommendations = getOrganizedRecommendations(sensorData);
 
+  // ⚠️ VALIDACIÓN: Si no hay datos, mostrar estado vacío
   if (!sensorData) {
     return (
-      <div className="bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-emerald-900/20 backdrop-blur-lg rounded-2xl p-6 border border-emerald-400/30 shadow-2xl">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-700 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
-          <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+      <div className="bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-emerald-900/20 backdrop-blur-lg rounded-2xl p-6 border border-gray-600/30 shadow-2xl">
+        <div className="text-center py-8">
+          <Icon name="alert" size={48} className="text-gray-500 mx-auto mb-4" />
+          <p className="text-gray-400 text-lg font-semibold">Sin datos de sensores</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Esperando información del ESP32...
+          </p>
         </div>
       </div>
     );
   }
 
+  const organizedRecommendations = getOrganizedRecommendations(sensorData);
+
   const tabs = Object.entries(organizedRecommendations)
     .filter(([_, recs]) => recs.length > 0)
     .map(([type]) => type);
 
-  if (tabs.length === 0) return null;
+  // Si no hay recomendaciones, mostrar mensaje positivo
+  if (tabs.length === 0) {
+    return (
+      <div className="bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-emerald-900/20 backdrop-blur-lg rounded-2xl p-6 border border-emerald-400/30 shadow-2xl">
+        <div className="text-center py-8">
+          <Icon name="check" size={48} className="text-emerald-400 mx-auto mb-4" />
+          <p className="text-emerald-300 text-lg font-semibold">
+            ¡Condiciones óptimas!
+          </p>
+          <p className="text-gray-400 text-sm mt-2">
+            Todos los parámetros están dentro del rango saludable
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Orden preferido de pestañas
-  const tabOrder = ["calidadAire", "temperature", "co2"];
+  const tabOrder = ["calidadAire", "temperature", "humedad"];
   const orderedTabs = tabOrder.filter((type) => tabs.includes(type));
 
   return (
@@ -139,7 +158,7 @@ const EnvironmentalTabs = ({ sensorData }) => {
           <div>
             <h2 className="text-xl font-bold text-white">
               <span className="bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
-                Recomendaciones:
+                Recomendaciones
               </span>
             </h2>
             <p className="text-emerald-200/70 text-sm mt-1">
@@ -189,27 +208,53 @@ const EnvironmentalTabs = ({ sensorData }) => {
         )}
       </div>
 
-      {/* Resumen de datos */}
+      {/* Resumen de datos - CORREGIDO */}
       <div className="px-5 pb-4 pt-3 bg-gradient-to-t from-gray-900/60 to-transparent border-t border-gray-700/30">
         <div className="grid grid-cols-2 gap-3 text-xs">
+          {/* Temperatura */}
           <div className="flex items-center bg-gray-800/40 p-2 rounded-lg">
             <Icon name="temperature" size={14} className="text-red-400 mr-2" />
-            <span className="text-white">{sensorData.temperature}°C</span>
+            <span className="text-white">
+              {typeof sensorData.temperature === 'number' && !isNaN(sensorData.temperature)
+                ? `${sensorData.temperature.toFixed(1)}°C`
+                : 'Sin datos'}
+            </span>
           </div>
+
+          {/* Humedad - CORREGIDO (era "ppm", debe ser "%") */}
+          <div className="flex items-center bg-gray-800/40 p-2 rounded-lg">
+            <Icon name="humedad" size={14} className="text-blue-400 mr-2" />
+            <span className="text-white">
+              {typeof sensorData.humidity === 'number' &&
+              !isNaN(sensorData.humidity) &&
+              sensorData.humidity > 0
+                ? `${sensorData.humidity.toFixed(1)}%`
+                : 'Sin datos'}
+            </span>
+          </div>
+
+          {/* CO₂ - CORREGIDO (era "/100", debe ser "ppm") */}
           <div className="flex items-center bg-gray-800/40 p-2 rounded-lg">
             <Icon name="airQuality" size={14} className="text-green-400 mr-2" />
-            <span className="text-white">{sensorData.airQuality}/100</span>
+            <span className="text-white">
+              {typeof sensorData.airQuality === 'number' && !isNaN(sensorData.airQuality)
+                ? `${sensorData.airQuality.toFixed(0)} ppm`
+                : 'Sin datos'}
+            </span>
           </div>
-          <div className="flex items-center bg-gray-800/40 p-2 rounded-lg">
-            <Icon name="co2" size={14} className="text-blue-400 mr-2" />
-            <span className="text-white">{sensorData.co2}ppm</span>
-          </div>
+
+          {/* Hora actual */}
           <div className="flex items-center bg-gray-800/40 p-2 rounded-lg">
             <Icon name="time" size={14} className="text-gray-400 mr-2" />
             <span className="text-white">
-              {new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
+              {new Date(sensorData.lastUpdate).toLocaleString('es-PE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
               })}
             </span>
           </div>
