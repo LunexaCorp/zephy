@@ -1,14 +1,23 @@
-import {Router} from 'express';
-import { getLocations, getLocationById, getDevicesByLocationId } from '../controllers/locations.controller.js';
+import { Router } from 'express';
+import {
+  getLocations,
+  getLocationById,
+  getDevicesByLocationId,
+  deleteLocation,
+  createLocation,
+  updateLocation
+} from '../controllers/locations.controller.js';
 
 const router = Router();
 
-// ruta raíz /locations
+// CRUD completo
+router.get('/', getLocations);                      // Listar todas
+router.get('/:id', getLocationById);                // Obtener una por ID
+router.post('/', createLocation);                   // Crear nueva
+router.put('/:id', updateLocation);                 // Actualizar
+router.delete('/:id', deleteLocation);              // Eliminar
 
-router.get('/', getLocations); // Lista todas las ubicaciones
-
-router.get('/:id', getLocationById); // Detalle de una ubicación por ID
-
-router.get('/:locationId/devices', getDevicesByLocationId); // Dispositivos en una ubicación
+// Ruta adicional
+router.get('/:locationId/devices', getDevicesByLocationId);
 
 export default router;

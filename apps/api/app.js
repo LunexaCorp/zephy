@@ -6,6 +6,7 @@ import pc from "picocolors";
 import { addSensorData } from "./controllers/sensorReading.controller.js";
 import mqtt from "mqtt";
 import cors from "cors";
+import uploadRoutes from './routes/upload.routes.js';
 
 import Device from './models/Device.js';
 import locationsRouter from "./routes/locations.router.js";
@@ -29,6 +30,7 @@ app.use(cors({
   origin: [
     "https://zephy-mdd.vercel.app", //dominio en producción
     "http://localhost:5173",     // entorno local
+    "http://localhost:5174",      // cms
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -36,7 +38,7 @@ app.use(cors({
 }));
 
 app.get("/", (req, res) => {
-  res.status(200).send("<h1>The Ecoroute Server is Running</h1>");
+  res.status(200).send("<h1>The Zephy Server is Running</h1>");
 });
 
 const apiRouter = express.Router();
@@ -44,14 +46,14 @@ apiRouter.use("/devices", devicesRoutes);
 apiRouter.use("/dashboard", dashboardRoutes);
 apiRouter.use("/locations", locationsRouter);
 apiRouter.use("/readings", sensorReadingRouter);
+apiRouter.use("/upload", uploadRoutes);
 app.use("/api/v1", apiRouter);
 
 // MAPEO DE TOPICS A NOMBRES DE CAMPOS DEL MODELO
 const topicToFieldMap = {
-  'co2': 'co2',
   'airquality': 'airQuality',
   'temperature': 'temperature',
-  'uvindex': 'uvIndex'
+  'humidity': 'humidity'
 };
 
 // Búfers y timeouts
@@ -132,9 +134,8 @@ const init = async () => {
           if (!buffers[deviceId]) {
             buffers[deviceId] = {
               temperature: null,
-              co2: null,
+              humidity: null,
               airQuality: null,
-              uvIndex: null
             };
           }
 
@@ -167,7 +168,7 @@ const init = async () => {
             const dataToSave = {
               deviceId,
               temperature: buffer.temperature,
-              co2: buffer.co2,
+              humidity: buffer.humidity,
               airQuality: buffer.airQuality,
               uvIndex: buffer.uvIndex,
             };
@@ -179,7 +180,7 @@ const init = async () => {
               console.error(pc.red(`Error al guardar datos parciales: ${err.message}`));
             }
 
-            buffers[deviceId] = { temperature: null, co2: null, airQuality: null, uvIndex: null };
+            buffers[deviceId] = { temperature: null, humidity: null, airQuality: null };
             delete timeouts[deviceId];
           }, TIMEOUT_MS);
 
@@ -192,9 +193,8 @@ const init = async () => {
             const dataToSave = {
               deviceId,
               temperature: buffer.temperature,
-              co2: buffer.co2,
+              humidity: buffer.humidity,
               airQuality: buffer.airQuality,
-              uvIndex: buffer.uvIndex,
             };
 
             console.log(pc.green(`Guardando datos completos: ${JSON.stringify(dataToSave)}`));
@@ -207,7 +207,7 @@ const init = async () => {
             }
 
             // Limpiar buffer y timeout
-            buffers[deviceId] = { temperature: null, co2: null, airQuality: null, uvIndex: null };
+            buffers[deviceId] = { temperature: null, humidity: null, airQuality: null};
             if (timeouts[deviceId]) {
               clearTimeout(timeouts[deviceId]);
               delete timeouts[deviceId];

@@ -1,6 +1,12 @@
 import {Router} from 'express';
 // Se importa la nueva función del controlador
-import { getDevices, getDeviceById, getSensorsByDeviceId, getLastDataByDeviceId } from '../controllers/devices.controller.js';
+import {
+  getDevices,
+  getDeviceById,
+  getSensorsByDeviceId,
+  getLastDataByDeviceId,
+  createDevice, updateDevice, deleteDevice
+} from '../controllers/devices.controller.js';
 
 const router = Router();
 
@@ -8,6 +14,12 @@ const router = Router();
 router.get('/', getDevices); // Lista todos los dispositivos con su ubicación poblada
 
 router.get('/:id', getDeviceById); // Detalle de un dispositivo por ID
+
+router.post('/', createDevice);
+
+router.put('/:id', updateDevice);
+
+router.delete('/:id', deleteDevice);
 
 // Obtiene todas las lecturas
 router.get('/:deviceId/sensors', getSensorsByDeviceId);

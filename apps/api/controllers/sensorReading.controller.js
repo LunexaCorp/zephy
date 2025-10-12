@@ -1,7 +1,7 @@
 import SensorReading from "../models/SensorReading.js";
 import Device from "../models/Device.js";
 
-// 1. Obtener todas las lecturas (usar solo para testing/admin con cuidado)
+// 1. Obtener todas las lecturas
 export async function getSensors(req, res) {
   try {
     const readings = await SensorReading.find().sort({ timestamp: -1 });
@@ -28,7 +28,7 @@ export async function getSensorById(req, res) {
 }
 
 export async function addSensorData(data) {
-  const { deviceId, temperature, co2, airQuality, uvIndex, noiseLevel, distance } = data;
+  const { deviceId, temperature, humidity, co2, airQuality, uvIndex, noiseLevel, distance } = data;
 
   if (!deviceId) {
     throw new Error("El ID del dispositivo es obligatorio.");
@@ -39,6 +39,7 @@ export async function addSensorData(data) {
       device: deviceId, // Usamos el campo 'device'
       timestamp: new Date(), // Usamos la hora del servidor (más fiable)
       temperature: temperature,
+      humidity: humidity,
       co2: co2,
       airQuality: airQuality,
       uvIndex: uvIndex,

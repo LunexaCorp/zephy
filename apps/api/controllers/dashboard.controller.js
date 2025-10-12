@@ -57,9 +57,8 @@ export async function getDashboardData(req, res) {
     console.log(`[Dashboard] Lectura encontrada:`, {
       timestamp: latestReading.timestamp,
       temperature: latestReading.temperature,
-      co2: latestReading.co2,
+      humidity: latestReading.humidity,
       airQuality: latestReading.airQuality,
-      uvIndex: latestReading.uvIndex
     });
 
     // 5. Construir respuesta en el formato que espera el frontend
@@ -69,9 +68,8 @@ export async function getDashboardData(req, res) {
       locationImg: location.img || null,
       sensorData: {
         temperature: latestReading.temperature ?? 0,
-        co2: latestReading.co2 ?? 0,
+        humidity: latestReading.humidity ?? 0,
         airQuality: latestReading.airQuality ?? 0,
-        uvIndex: latestReading.uvIndex ?? 0,
         lastUpdate: latestReading.timestamp
       }
     };
@@ -93,9 +91,8 @@ export async function getAllDashboards(req, res) {
     console.log(`[Dashboard] Solicitando datos de todas las ubicaciones`);
 
     const locations = await Location.find();
-    console.log(`[Dashboard] ${locations.length} ubicaciones encontradas`);
-
     const dashboards = [];
+    let defaultLocationId = null; // 💡 Renombrado para claridad
 
     for (const location of locations) {
       const device = await Device.findOne({
@@ -103,49 +100,55 @@ export async function getAllDashboards(req, res) {
         isEnabled: true
       });
 
-      if (!device) {
-        console.log(`[Dashboard] ${location.name}: Sin dispositivo`);
-        dashboards.push({
-          locationId: location._id,
-          locationName: location.name,
-          locationImg: location.img || null,
-          sensorData: null
-        });
-        continue;
+      let latestReading = null;
+      if (device) {
+        latestReading = await SensorReading.findOne({ device: device._id })
+          .sort({ timestamp: -1 })
+          .lean();
       }
 
-      const latestReading = await SensorReading.findOne({ device: device._id })
-        .sort({ timestamp: -1 })
-        .lean();
+      // 1. Construir el objeto del dashboard (con o sin sensorData)
+      const sensorData = latestReading ? {
+        temperature: latestReading.temperature ?? 0,
+        humidity: latestReading.humidity ?? 0,
+        airQuality: latestReading.airQuality ?? 0,
+        lastUpdate: latestReading.timestamp
+      } : null;
 
-      if (!latestReading) {
-        console.log(`[Dashboard] ${location.name}: Sin lecturas`);
-        dashboards.push({
-          locationId: location._id,
-          locationName: location.name,
-          locationImg: location.img || null,
-          sensorData: null
-        });
-        continue;
-      }
-
-      console.log(`[Dashboard] ${location.name}: Datos encontrados`);
-      dashboards.push({
+      const dashboardItem = {
         locationId: location._id,
         locationName: location.name,
         locationImg: location.img || null,
-        sensorData: {
-          temperature: latestReading.temperature ?? 0,
-          co2: latestReading.co2 ?? 0,
-          airQuality: latestReading.airQuality ?? 0,
-          uvIndex: latestReading.uvIndex ?? 0,
-          lastUpdate: latestReading.timestamp
-        }
-      });
+        sensorData: sensorData
+      };
+
+      // 2. Agregar el item UNA SOLA VEZ
+      dashboards.push(dashboardItem);
+
+      // 3. 💡 Lógica CLAVE: Establecer el ID por defecto (el primero que tenga datos válidos)
+      if (!defaultLocationId && dashboardItem.sensorData) {
+        defaultLocationId = location._id;
+        console.log(`[Dashboard] Estableciendo default: ${location.name}`);
+      }
+
+      if (!device) {
+        console.log(`[Dashboard] ${location.name}: Sin dispositivo`);
+      } else if (!latestReading) {
+        console.log(`[Dashboard] ${location.name}: Sin lecturas`);
+      } else {
+        console.log(`[Dashboard] ${location.name}: Datos encontrados`);
+      }
     }
 
-    console.log(`[Dashboard] Retornando ${dashboards.length} ubicaciones`);
-    res.status(200).json(dashboards);
+    // 4. Retornar el array y el ID por defecto
+    const finalDefaultId = defaultLocationId || (locations.length > 0 ? locations[0]._id : null);
+
+    console.log(`[Dashboard] Retornando ${dashboards.length} ubicaciones. Default: ${finalDefaultId}`);
+
+    res.status(200).json({
+      dashboards: dashboards,
+      defaultLocationId: finalDefaultId
+    });
 
   } catch (err) {
     console.error("[Dashboard] Error:", err);
