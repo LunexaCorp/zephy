@@ -44,3 +44,14 @@ export const getSingleDashboardData = async (locationId) => {
     throw error;
   }
 };
+
+export const getAllDashboardsData = async () => {
+  try {
+    const response = await api.get("/dashboard/all");
+    // El backend devuelve { dashboards: [...], defaultLocationId: "..." }
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all dashboards:", error);
+    throw error.response?.data?.error || "Error al obtener todos los dashboards";
+  }
+};

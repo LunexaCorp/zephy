@@ -1,5 +1,5 @@
 export const Tips = (sensorData) => {
-  const { temperature, co2, airQuality } = sensorData || {};
+  const { temperature, humidity, airQuality } = sensorData || {};
 
   return [
     {
@@ -20,15 +20,6 @@ export const Tips = (sensorData) => {
         "1. Ventila 10 min cada 3 horas. 2. Usa plantas purificadoras. 3. Evita productos químicos. 4. Mantén limpieza regular. 5. Controla humedad (40-60%).",
       severity: "advice",
       condition: airQuality < 70,
-    },
-    {
-      id: "forecast",
-      type: "forecast",
-      icon: "sun",
-      title: "Pronóstico ambiental",
-      content:
-        "En las próximas horas: Se espera una mejora gradual en la calidad del aire. La temperatura se mantendrá estable. Ideal para ventilar al mediodía.",
-      severity: "info",
     },
     {
       id: "practical-tips",
