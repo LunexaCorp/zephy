@@ -2,70 +2,57 @@ import Location from "../models/Location.js";
 import Device from "../models/Device.js";
 import SensorReading from "../models/SensorReading.js";
 
-// Obtener datos de UN medidor específico
+// 🎯 Obtener datos de UN medidor específico
 export async function getDashboardData(req, res) {
   try {
     const { locationId } = req.params;
-    console.log(`[Dashboard] Solicitando datos para locationId: ${locationId}`);
+    console.log(`[Dashboard] 📍 Solicitando: ${locationId}`);
 
-    // 1. Buscar la ubicación
-    const location = await Location.findById(locationId);
+    const location = await Location.findById(locationId).lean();
     if (!location) {
-      console.log(`[Dashboard] Ubicación ${locationId} no encontrada`);
       return res.status(404).json({ error: "Location not found" });
     }
-    console.log(`[Dashboard] Ubicación encontrada: ${location.name}`);
 
-    // 2. Buscar dispositivo asociado
     const device = await Device.findOne({
       location: location._id,
       isEnabled: true
-    });
+    }).lean();
 
     if (!device) {
-      console.log(`[Dashboard] No hay dispositivo activo para ${location.name}`);
       return res.status(200).json({
         locationId: location._id,
         locationName: location.name,
         locationImg: location.img || null,
+        description: location.description || '',
+        coordinates: location.coordinates || null,
         sensorData: null,
         message: "No hay dispositivo activo"
       });
     }
-    console.log(`[Dashboard] Dispositivo encontrado: ${device._id}`);
 
-    // 3. Contar lecturas existentes (debug)
-    const totalReadings = await SensorReading.countDocuments({ device: device._id });
-    console.log(`[Dashboard] Total lecturas para ${device._id}: ${totalReadings}`);
-
-    // 4. Obtener la lectura más reciente
     const latestReading = await SensorReading.findOne({ device: device._id })
       .sort({ timestamp: -1 })
+      .select('temperature humidity airQuality timestamp')
       .lean();
 
     if (!latestReading) {
-      console.log(`⚠[Dashboard] No hay lecturas para ${device._id}`);
       return res.status(200).json({
         locationId: location._id,
         locationName: location.name,
         locationImg: location.img || null,
+        description: location.description || '',
+        coordinates: location.coordinates || null,
         sensorData: null,
         message: "Sin datos disponibles"
       });
     }
 
-    console.log(`[Dashboard] Lectura encontrada:`, {
-      timestamp: latestReading.timestamp,
-      temperature: latestReading.temperature,
-      humidity: latestReading.humidity,
-      airQuality: latestReading.airQuality,
-    });
-
-    // 5. Construir respuesta en el formato que espera el frontend
     const response = {
       locationId: location._id,
       locationName: location.name,
       locationImg: location.img || null,
+      description: location.description || '',
+      coordinates: location.coordinates || null,
       sensorData: {
         temperature: latestReading.temperature ?? 0,
         humidity: latestReading.humidity ?? 0,
@@ -77,7 +64,7 @@ export async function getDashboardData(req, res) {
     res.status(200).json(response);
 
   } catch (err) {
-    console.error("[Dashboard] Error:", err);
+    console.error("[Dashboard] ❌ Error:", err);
     res.status(500).json({
       error: "Error al obtener datos del dashboard",
       details: err.message
@@ -85,73 +72,112 @@ export async function getDashboardData(req, res) {
   }
 }
 
-// Obtener datos de TODOS los medidores
+// 🚀 Obtener TODOS los medidores (FALLBACK ULTRA-OPTIMIZADO)
 export async function getAllDashboards(req, res) {
   try {
-    console.log(`[Dashboard] Solicitando datos de todas las ubicaciones`);
+    const startTime = Date.now();
+    console.log(`[Dashboard] 📊 Solicitando todos los dashboards (método ultra-optimizado)`);
 
-    const locations = await Location.find();
+    // 1. Consultas en paralelo para reducir tiempo
+    const [locations, devices] = await Promise.all([
+      Location.find().select('name img description coordinates').lean(),
+      Device.find({ isEnabled: true }).select('location _id').lean()
+    ]);
+
+    if (locations.length === 0) {
+      return res.status(200).json({
+        dashboards: [],
+        defaultLocationId: null
+      });
+    }
+
+    console.log(`[Dashboard] ✓ ${locations.length} locations y ${devices.length} devices cargados`);
+
+    // 2. Crear mapa location -> device (O(1) lookup)
+    const locationToDevice = new Map();
+    devices.forEach(device => {
+      locationToDevice.set(device.location.toString(), device._id);
+    });
+
+    // 3. Obtener TODAS las últimas lecturas en UNA SOLA consulta usando aggregate
+    const deviceIds = Array.from(locationToDevice.values());
+
+    const latestReadings = await SensorReading.aggregate([
+      {
+        $match: { device: { $in: deviceIds } }
+      },
+      {
+        $sort: { device: 1, timestamp: -1 }
+      },
+      {
+        $group: {
+          _id: '$device',
+          temperature: { $first: '$temperature' },
+          humidity: { $first: '$humidity' },
+          airQuality: { $first: '$airQuality' },
+          timestamp: { $first: '$timestamp' }
+        }
+      }
+    ]);
+
+    console.log(`[Dashboard] ✓ ${latestReadings.length} lecturas obtenidas en aggregate`);
+
+    // 4. Crear mapa device -> reading (O(1) lookup)
+    const deviceToReading = new Map();
+    latestReadings.forEach((reading) => {
+      deviceToReading.set(reading._id.toString(), reading);
+    });
+
+    // 5. Construir dashboards
     const dashboards = [];
-    let defaultLocationId = null; // 💡 Renombrado para claridad
+    let defaultLocationId = null;
 
     for (const location of locations) {
-      const device = await Device.findOne({
-        location: location._id,
-        isEnabled: true
-      });
+      const locationIdStr = location._id.toString();
+      const deviceId = locationToDevice.get(locationIdStr);
+      const reading = deviceId ? deviceToReading.get(deviceId.toString()) : null;
 
-      let latestReading = null;
-      if (device) {
-        latestReading = await SensorReading.findOne({ device: device._id })
-          .sort({ timestamp: -1 })
-          .lean();
-      }
-
-      // 1. Construir el objeto del dashboard (con o sin sensorData)
-      const sensorData = latestReading ? {
-        temperature: latestReading.temperature ?? 0,
-        humidity: latestReading.humidity ?? 0,
-        airQuality: latestReading.airQuality ?? 0,
-        lastUpdate: latestReading.timestamp
+      const sensorData = reading ? {
+        temperature: reading.temperature ?? 0,
+        humidity: reading.humidity ?? 0,
+        airQuality: reading.airQuality ?? 0,
+        lastUpdate: reading.timestamp
       } : null;
 
       const dashboardItem = {
         locationId: location._id,
         locationName: location.name,
         locationImg: location.img || null,
-        sensorData: sensorData
+        description: location.description || '',
+        coordinates: location.coordinates || null,
+        sensorData
       };
 
-      // 2. Agregar el item UNA SOLA VEZ
       dashboards.push(dashboardItem);
 
-      // 3. 💡 Lógica CLAVE: Establecer el ID por defecto (el primero que tenga datos válidos)
-      if (!defaultLocationId && dashboardItem.sensorData) {
+      // Establecer default (primer medidor con datos)
+      if (!defaultLocationId && sensorData) {
         defaultLocationId = location._id;
-        console.log(`[Dashboard] Estableciendo default: ${location.name}`);
-      }
-
-      if (!device) {
-        console.log(`[Dashboard] ${location.name}: Sin dispositivo`);
-      } else if (!latestReading) {
-        console.log(`[Dashboard] ${location.name}: Sin lecturas`);
-      } else {
-        console.log(`[Dashboard] ${location.name}: Datos encontrados`);
       }
     }
 
-    // 4. Retornar el array y el ID por defecto
-    const finalDefaultId = defaultLocationId || (locations.length > 0 ? locations[0]._id : null);
+    // 6. Fallback si no hay medidores con datos
+    const finalDefaultId = defaultLocationId ||
+      (locations.length > 0 ? locations[0]._id : null);
 
-    console.log(`[Dashboard] Retornando ${dashboards.length} ubicaciones. Default: ${finalDefaultId}`);
-
-    res.status(200).json({
-      dashboards: dashboards,
+    const response = {
+      dashboards,
       defaultLocationId: finalDefaultId
-    });
+    };
+
+    const elapsed = Date.now() - startTime;
+    const withData = dashboards.filter(d => d.sensorData).length;
+    console.log(`[Dashboard] ✅ Completado en ${elapsed}ms. ${dashboards.length} ubicaciones (${withData} con datos)`);
+
+    res.status(200).json(response);
 
   } catch (err) {
-    console.error("[Dashboard] Error:", err);
+    console.error("[Dashboard] ❌ Error:", err);
     res.status(500).json({
       error: "Error al obtener dashboards",
       details: err.message
