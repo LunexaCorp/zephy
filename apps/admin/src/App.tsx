@@ -1,5 +1,5 @@
 import "./App.css";
-import Home from "./pages/home.tsx";
+import Home from "./pages/Home.tsx";
 import LocationPage from "./pages/Locations.tsx";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
