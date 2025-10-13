@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { getLocations, getSingleDashboardData } from "../services/axios.js";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { getAllDashboardsData } from "../services/axios.js";
 import {
   PercentageCalculation,
   getColorByPercentage,
@@ -11,8 +11,18 @@ const defaultCenter = [-12.6, -69.185];
 // Función para parsear coordenadas de forma segura
 const parseCoordinates = (lat, lng) => {
   try {
-    return [parseFloat(lat), parseFloat(lng)];
-  } catch {
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+
+    // Validar que son números válidos
+    if (isNaN(parsedLat) || isNaN(parsedLng)) {
+      console.warn(`Coordenadas inválidas: lat=${lat}, lng=${lng}`);
+      return defaultCenter;
+    }
+
+    return [parsedLat, parsedLng];
+  } catch (error) {
+    console.error("Error al parsear coordenadas:", error);
     return defaultCenter;
   }
 };
@@ -30,66 +40,97 @@ const useMapData = () => {
   const [filter, setFilter] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState(null);
 
-  const fetchData = async () => {
+  // 🎯 Función para procesar los datos del dashboard y convertirlos en formato del mapa
+  const processLocationsData = useCallback((dashboards) => {
+    return dashboards
+      .map((dashboard) => {
+        const sensorData = dashboard.sensorData || {};
+        const percentage = PercentageCalculation(sensorData);
+
+        // Nota: Necesitamos las coordenadas de Location
+        // Si no están en el dashboard, necesitamos cargarlas por separado
+        // o incluirlas en el endpoint getAllDashboards
+
+        return {
+          id: dashboard.locationId,
+          name: dashboard.locationName,
+          description: dashboard.description || "", // Agregar si está disponible
+          position: dashboard.coordinates
+            ? parseCoordinates(dashboard.coordinates.latitude, dashboard.coordinates.longitude)
+            : defaultCenter, // Fallback si no hay coordenadas
+          img: dashboard.locationImg,
+          percentage,
+          color: getColorByPercentage(percentage),
+          radius: 80 + percentage / 2,
+          hasData: !!dashboard.sensorData,
+          sensorData: {
+            temperature: sensorData.temperature ?? 0,
+            humidity: sensorData.humidity ?? 0,
+            airQuality: sensorData.airQuality ?? 0,
+            lastUpdated: sensorData.lastUpdate
+              ? new Date(sensorData.lastUpdate).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              : "N/A",
+          },
+        };
+      })
+      .filter((loc) => loc.position !== defaultCenter || loc.hasData); // Filtrar ubicaciones sin coordenadas válidas
+  }, []);
+
+  // ✅ Función optimizada para cargar datos
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null); // Limpiar errores antes de la nueva petición
+      setError(null);
 
-      const locations = await getLocations();
+      // 🚀 Una sola llamada para obtener todos los dashboards
+      const response = await getAllDashboardsData();
+      const allDashboards = response.dashboards || [];
 
-      const locationsWithData = await Promise.all(
-        locations.map(async (loc) => {
-          const response = await getSingleDashboardData(loc._id);
-          const sensorData = response.sensorData || {};
+      if (allDashboards.length === 0) {
+        setError("No hay ubicaciones disponibles para mostrar en el mapa.");
+        setProcessedLocations([]);
+        return;
+      }
 
-          const percentage = PercentageCalculation(sensorData);
-
-          return {
-            id: loc._id,
-            name: loc.name,
-            description: loc.description,
-            position: parseCoordinates(
-              loc.coordinates.latitude,
-              loc.coordinates.longitude
-            ),
-            img: loc.img,
-            percentage,
-            color: getColorByPercentage(percentage),
-            radius: 80 + percentage / 2,
-            sensorData: {
-              temperature: sensorData.temperature ?? 0,
-              humidity: sensorData.humidity ?? 0,
-              airQuality: sensorData.airQuality ?? 0,
-              lastUpdated: sensorData.lastUpdate
-                ? new Date(sensorData.lastUpdate).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-                : "N/A",
-            },
-          };
-        })
-      );
+      // Procesar los datos
+      const locationsWithData = processLocationsData(allDashboards);
 
       setProcessedLocations(locationsWithData);
+
     } catch (err) {
-      console.error(err);
-      setError("Error al cargar datos del mapa");
+      console.error("[Map] ❌ Error al cargar datos:", err);
+
+      const errorMessage = typeof err === 'string'
+        ? err
+        : err.message || "Error al cargar datos del mapa";
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [processLocationsData]);
 
-  // Efecto para la carga inicial y las actualizaciones periódicas
+  // ✅ Efecto para la carga inicial y las actualizaciones periódicas
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 120000); // 2 minutos
-    return () => clearInterval(interval);
-  }, []); // Se ejecuta solo al montar el componente
 
-  // Memoización de la lógica de filtrado para optimizar el rendimiento
+    fetchData();
+
+    // Actualización cada 2 minutos
+    const interval = setInterval(() => {
+      fetchData();
+    }, 120000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [fetchData]);
+
+  // ✅ Memoización de la lógica de filtrado para optimizar el rendimiento
   const filteredLocations = useMemo(() => {
-    return processedLocations.filter((loc) => {
+    const filtered = processedLocations.filter((loc) => {
       if (filter === "all") return true;
       if (filter === "healthy") return loc.percentage >= 70;
       if (filter === "moderate")
@@ -97,6 +138,8 @@ const useMapData = () => {
       if (filter === "critical") return loc.percentage < 40;
       return true;
     });
+
+    return filtered;
   }, [processedLocations, filter]);
 
   return {
@@ -108,6 +151,7 @@ const useMapData = () => {
     setFilter,
     selectedLocation,
     setSelectedLocation,
+    refetch: fetchData, // 💡 Exponer función para refrescar manualmente
   };
 };
 

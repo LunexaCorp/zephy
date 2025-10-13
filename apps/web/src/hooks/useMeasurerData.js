@@ -1,7 +1,4 @@
-// hooks/useMeasurerData.js
-
-import { useEffect, useState } from "react";
-// 💡 ASUME que tienes estas funciones de servicio
+import { useEffect, useState, useCallback } from "react";
 import { getSingleDashboardData, getAllDashboardsData } from "../services/axios.js";
 
 export const useMeasurerData = () => {
@@ -13,50 +10,81 @@ export const useMeasurerData = () => {
     localStorage.getItem("lastLocation") || null
   );
 
-  // Función para manejar la lógica de selección y fallback local
-  const selectDashboard = (allDashboards, targetLocationId) => {
-    // 1. Intentar cargar la ubicación target (guardada o por defecto)
-    let selectedData = allDashboards.find(d => d.locationId === targetLocationId);
+  // 🎯 Función para actualizar UN SOLO medidor (reutilizable)
+  const fetchSingleMeasurer = useCallback(async (locationId) => {
+    if (!locationId) return;
 
-    // 2. Actualizar estados
-    if (selectedData) {
-      setDashboardData(selectedData);
-      setCurrentLocation(selectedData.locationId);
-      localStorage.setItem("lastLocation", selectedData.locationId);
+    try {
+      const data = await getSingleDashboardData(locationId);
+
+      if (data && data.locationId) {
+        setDashboardData(data);
+
+        if (data.sensorData) {
+          setError(null);
+        } else {
+          setError(data.message || "Sin datos de sensor en esta ubicación.");
+        }
+      } else {
+        setError("Error: Respuesta no válida del medidor.");
+      }
+    } catch (err) {
+      console.error("[Hook] Error al actualizar medidor:", err);
+      setError("Error de conexión al actualizar datos.");
     }
-  };
+  }, []);
 
-
-  // Carga Inicial (Un solo useEffect sin bucles de fetch)
+  // ✅ CARGA INICIAL: Solo UNA VEZ al montar
   useEffect(() => {
     const init = async () => {
       try {
-        // 1. Cargar TODOS los datos en una sola llamada al nuevo endpoint
+        setError(null); // Limpiar error anterior
+
+        // 1. Cargar TODOS los dashboards (solo esta vez)
         const response = await getAllDashboardsData();
         const allDashboards = response.dashboards || [];
         const defaultLocationId = response.defaultLocationId;
 
         if (allDashboards.length === 0) {
           setError("No hay ubicaciones disponibles.");
+          setLoading(false);
           return;
         }
 
-        // 2. Extraer las ubicaciones para el selector
+        // 2. Configurar lista de ubicaciones para el selector
         setLocations(allDashboards.map(d => ({
           _id: d.locationId,
           name: d.locationName,
-          // 💡 Puedes agregar si tiene datos o no para el selector visual
           hasData: !!d.sensorData
         })));
 
-        // 3. Determinar la ubicación a mostrar inicialmente
-        const initialLocation = currentLocation || defaultLocationId;
+        // 3. Determinar ubicación inicial
+        const savedLocation = localStorage.getItem("lastLocation");
+        const initialLocation = savedLocation || defaultLocationId;
 
-        // 4. Ejecutar la lógica de selección y fallback
-        selectDashboard(allDashboards, initialLocation);
+        // 4. Buscar datos de la ubicación inicial en la carga
+        const initialData = allDashboards.find(d => d.locationId === initialLocation);
+
+        if (initialData) {
+          setDashboardData(initialData);
+          setCurrentLocation(initialData.locationId);
+
+          if (!initialData.sensorData) {
+            setError("Sin datos de sensor en esta ubicación.");
+          }
+        } else {
+          // Fallback: usar el primer dashboard con datos
+          const firstWithData = allDashboards.find(d => d.sensorData);
+          if (firstWithData) {
+            setDashboardData(firstWithData);
+            setCurrentLocation(firstWithData.locationId);
+            localStorage.setItem("lastLocation", firstWithData.locationId);
+          }
+        }
+
 
       } catch (err) {
-        console.error("[Hook] Error al cargar los datos iniciales:", err);
+        console.error("[Hook] ❌ Error en carga inicial:", err);
         setError("Error al cargar los datos iniciales.");
       } finally {
         setLoading(false);
@@ -64,45 +92,38 @@ export const useMeasurerData = () => {
     };
 
     init();
-  }, []); // Solo se ejecuta al montar el componente
+  }, []); // 🔒 Solo se ejecuta al montar
 
-
-  // Actualización de Datos (Refresco y Cambio de Ubicación)
+  // ✅ ACTUALIZACIÓN PERIÓDICA: Solo del medidor actual
   useEffect(() => {
-    if (!currentLocation || locations.length === 0 || loading) return;
+    if (!currentLocation || loading) return;
 
-    const fetchData = async () => {
-      try {
-        // un medidor
-        const data = await getSingleDashboardData(currentLocation);
 
-        // Comprobamos si la data retornada es válida
-        if (data && data.locationId) {
-          setDashboardData(data);
-          if (data.sensorData) {
-            setError(null);
-          } else {
-            setError(data.message || "Sin datos de sensor en esta ubicación.");
-          }
-        } else {
-          setError("Error: Respuesta no válida del medidor.");
-        }
-        localStorage.setItem("lastLocation", currentLocation);
 
-      } catch (err) {
-        console.error("[Hook] Error al actualizar datos:", err);
-        setError("Error de conexión al actualizar datos.");
-      }
+    // 1. Fetch inicial del medidor seleccionado
+    fetchSingleMeasurer(currentLocation);
+
+    // 2. Configurar intervalo de actualización
+    const interval = setInterval(() => {
+
+      fetchSingleMeasurer(currentLocation);
+    }, 30000); // Cada 30 segundos
+
+    // 3. Limpiar intervalo al cambiar de ubicación o desmontar
+    return () => {
+
+
+
+      clearInterval(interval);
     };
+  }, [currentLocation, loading, fetchSingleMeasurer]);
 
-    // 1. Ejecutar inmediatamente al cambiar `currentLocation`
-    fetchData();
+  // ✅ MANEJADOR DE CAMBIO DE UBICACIÓN
+  const handleLocationChange = useCallback((newLocationId) => {
 
-    // 2. Configurar el intervalo de refresco
-    const interval = setInterval(fetchData, 30000); // Cada 30 segundos
-
-    return () => clearInterval(interval); // Limpiar al desmontar o cambiar dependencias
-  }, [currentLocation, locations, loading]); // Dependencias: cambia si la ubicación o la lista de locations cambia
+    setCurrentLocation(newLocationId);
+    localStorage.setItem("lastLocation", newLocationId);
+  }, []);
 
   return {
     dashboardData,
@@ -110,6 +131,6 @@ export const useMeasurerData = () => {
     loading,
     error,
     currentLocation,
-    setCurrentLocation,
+    setCurrentLocation: handleLocationChange,
   };
 };
