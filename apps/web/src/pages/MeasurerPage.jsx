@@ -8,8 +8,8 @@ import DataPanel from "../components/measurer/DataPanel.jsx";
 import MeasurerImage from "../components/measurer/MeasurerImage.jsx";
 import MeasurerButtons from "../components/measurer/MeasurerButtons.jsx";
 import { EnvironmentalGauge } from "../components/EnvironmentalGauge.jsx";
-import EnvironmentalTabs from "../components/EnvironmentalTabs.jsx";
-import TipsCarousel from "../components/TipsCarousel.jsx";
+import EnvironmentalTabs from "../components/measurer/EnvironmentalTabs.jsx";
+import TipsCarousel from "../components/measurer/TipsCarousel.jsx";
 
 const MeasurerPage = () => {
 
