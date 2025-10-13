@@ -3,8 +3,8 @@ import {
   getOrganizedRecommendations,
   getCategoryInfo,
   getSeverityStyle,
-} from "../utils/Recommendations.js";
-import { Icon } from "./Icons.jsx";
+} from "../../utils/Recommendations.js";
+import { Icon } from "../Icons.jsx";
 
 const TabButton = ({ active, onClick, title, hasRecommendations }) => {
   const categoryInfo = getCategoryInfo(title);
@@ -103,7 +103,7 @@ const RecommendationCard = ({ recommendation }) => {
 };
 
 const EnvironmentalTabs = ({ sensorData }) => {
-  const [activeTab, setActiveTab] = useState("calidadAire");
+  const [activeTab, setActiveTab] = useState(null);
 
   // ⚠️ VALIDACIÓN: Si no hay datos, mostrar estado vacío
   if (!sensorData) {
@@ -122,12 +122,18 @@ const EnvironmentalTabs = ({ sensorData }) => {
 
   const organizedRecommendations = getOrganizedRecommendations(sensorData);
 
-  const tabs = Object.entries(organizedRecommendations)
-    .filter(([_, recs]) => recs.length > 0)
+  // Filtrar tabs que tienen recomendaciones
+  const availableTabs = Object.entries(organizedRecommendations)
+    .filter(([_, recs]) => recs && recs.length > 0)
     .map(([type]) => type);
 
+  // Establecer tab activo inicial si no está definido
+  if (activeTab === null && availableTabs.length > 0) {
+    setActiveTab(availableTabs[0]);
+  }
+
   // Si no hay recomendaciones, mostrar mensaje positivo
-  if (tabs.length === 0) {
+  if (availableTabs.length === 0) {
     return (
       <div className="bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-emerald-900/20 backdrop-blur-lg rounded-2xl p-6 border border-emerald-400/30 shadow-2xl">
         <div className="text-center py-8">
@@ -144,8 +150,8 @@ const EnvironmentalTabs = ({ sensorData }) => {
   }
 
   // Orden preferido de pestañas
-  const tabOrder = ["calidadAire", "temperature", "humedad"];
-  const orderedTabs = tabOrder.filter((type) => tabs.includes(type));
+  const tabOrder = ["airQuality", "temperature", "humidity", "combined"];
+  const orderedTabs = tabOrder.filter((type) => availableTabs.includes(type));
 
   return (
     <div className="bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-emerald-900/20 backdrop-blur-lg rounded-2xl overflow-hidden border border-emerald-400/30 shadow-2xl hover:shadow-2xl transition-all duration-500">
@@ -187,7 +193,7 @@ const EnvironmentalTabs = ({ sensorData }) => {
 
       {/* Contenido de la pestaña activa */}
       <div className="p-5 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/50">
-        {organizedRecommendations[activeTab]?.length > 0 ? (
+        {activeTab && organizedRecommendations[activeTab]?.length > 0 ? (
           organizedRecommendations[activeTab].map((rec) => (
             <RecommendationCard key={rec.id} recommendation={rec} />
           ))
@@ -208,7 +214,7 @@ const EnvironmentalTabs = ({ sensorData }) => {
         )}
       </div>
 
-      {/* Resumen de datos - CORREGIDO */}
+      {/* Resumen de datos */}
       <div className="px-5 pb-4 pt-3 bg-gradient-to-t from-gray-900/60 to-transparent border-t border-gray-700/30">
         <div className="grid grid-cols-2 gap-3 text-xs">
           {/* Temperatura */}
@@ -221,7 +227,7 @@ const EnvironmentalTabs = ({ sensorData }) => {
             </span>
           </div>
 
-          {/* Humedad - CORREGIDO (era "ppm", debe ser "%") */}
+          {/* Humedad */}
           <div className="flex items-center bg-gray-800/40 p-2 rounded-lg">
             <Icon name="humedad" size={14} className="text-blue-400 mr-2" />
             <span className="text-white">
@@ -233,12 +239,12 @@ const EnvironmentalTabs = ({ sensorData }) => {
             </span>
           </div>
 
-          {/* CO₂ - CORREGIDO (era "/100", debe ser "ppm") */}
+          {/* Calidad del Aire */}
           <div className="flex items-center bg-gray-800/40 p-2 rounded-lg">
             <Icon name="airQuality" size={14} className="text-green-400 mr-2" />
             <span className="text-white">
               {typeof sensorData.airQuality === 'number' && !isNaN(sensorData.airQuality)
-                ? `${sensorData.airQuality.toFixed(0)} ppm`
+                ? `${sensorData.airQuality.toFixed(0)}/100`
                 : 'Sin datos'}
             </span>
           </div>

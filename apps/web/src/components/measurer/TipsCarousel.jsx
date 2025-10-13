@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Tips, getTipCardStyle } from "../utils/Tips.js";
-import { Icon } from "./Icons.jsx";
+import { Tips, getTipCardStyle } from "../../utils/Tips.js";
+import { Icon } from "../Icons.jsx";
 
 const TipCard = ({ tip, isActive }) => (
   <div

@@ -92,12 +92,12 @@ const DataPanel = ({ currentData }) => {
           unit="%"
         />
 
-        {/* Calidad del Aire (CO₂) */}
+        {/* Calidad del Aire */}
         <DataItem
-          label="CO₂ (Calidad del Aire)"
+          label="Calidad del Aire"
           value={hasAirQuality ? sensorData.airQuality : null}
           icon={<Wind className="text-green-400 w-6 h-6" />}
-          unit=" ppm"
+          unit=""
         />
       </div>
 
