@@ -1,233 +1,284 @@
-// ../utils/PercentageCalculation.js
-// VERSIÓN CORREGIDA PARA PUERTO MALDONADO, PERÚ
-// Sensores: DHT11 (temperatura/humedad) + MQ135 (calidad del aire)
+// ═══════════════════════════════════════════════════════════════════════
+// EVALUACIÓN DE CALIDAD AMBIENTAL
+// ═══════════════════════════════════════════════════════════════════════
+// Basado en: ASHRAE 55-2020, OMS, ISO 7730
+// ═══════════════════════════════════════════════════════════════════════
 
-/**
- * Normaliza un valor entre 0 y 1 (usado para CO₂ donde más es peor)
- * @param {number} value - Valor actual del sensor
- * @param {number} min - Valor mínimo aceptable (baseline)
- * @param {number} max - Valor máximo antes de salud crítica
- * @returns {number} Puntuación normalizada (0 a 1)
- */
-const normalizeInverse = (value, min, max) => {
-  if (value <= min) return 1; // Excelente: aire limpio
-  if (value >= max) return 0; // Peligroso: límite crítico
-
-  // Interpolación lineal inversa
-  return 1 - (value - min) / (max - min);
+// ───────────────────────────────────────────────────────────────────────
+// CONFIGURACIÓN DE PESOS POR PARÁMETRO
+// ───────────────────────────────────────────────────────────────────────
+const SENSOR_WEIGHTS = {
+  temperature: 0.30,  // 30% - Confort térmico
+  humidity: 0.30,     // 30% - Confort higrotérmico
+  airQuality: 0.40,   // 40% - Calidad del aire (mayor impacto en salud)
 };
 
+// ───────────────────────────────────────────────────────────────────────
+// PARÁMETROS DE TEMPERATURA
+// ───────────────────────────────────────────────────────────────────────
+// Referencia: ASHRAE 55-2020 (Thermal Environmental Conditions)
+// Adaptado para clima tropical de Puerto Maldonado
+const TEMPERATURE_CONFIG = {
+  OPTIMAL_MIN: 22,        // °C - Límite inferior de confort (ASHRAE 55)
+  OPTIMAL_MAX: 26,        // °C - Límite superior de confort (ASHRAE 55)
+  TOLERANCE_LOW: 10,      // °C - Margen hacia frío extremo (12°C mínimo)
+  TOLERANCE_HIGH: 12,     // °C - Margen hacia calor extremo (38°C máximo)
+  SENSOR_MIN: -40,        // °C - Límite físico del DHT11
+  SENSOR_MAX: 80,         // °C - Límite físico del DHT11
+};
+
+// ───────────────────────────────────────────────────────────────────────
+// PARÁMETROS DE HUMEDAD RELATIVA
+// ───────────────────────────────────────────────────────────────────────
+// Referencia: ISO 7730, OMS (WHO Housing and Health Guidelines)
+// Adaptado para trópico húmedo (60-90% frecuente)
+const HUMIDITY_CONFIG = {
+  OPTIMAL_MIN: 50,        // % - Límite inferior confort (OMS: 40-70%)
+  OPTIMAL_MAX: 70,        // % - Límite superior confort
+  TOLERANCE_LOW: 30,      // % - Margen hacia sequedad (20% mínimo)
+  TOLERANCE_HIGH: 25,     // % - Margen hacia saturación (95% máximo)
+  SENSOR_MIN: 0,          // % - Límite físico del DHT11
+  SENSOR_MAX: 100,        // % - Límite físico del DHT11
+};
+
+// ───────────────────────────────────────────────────────────────────────
+// PARÁMETROS DE CALIDAD DEL AIRE (MQ135)
+// ───────────────────────────────────────────────────────────────────────
+// IMPORTANTE: El MQ135 es un sensor multi-gas (NH₃, NOx, alcohol, humo, VOCs)
+// Umbrales basados en:
+// - Curva característica del datasheet MQ135
+// - Estudios de calidad del aire interior (Indoor Air Quality)
+// - Adaptación experimental para ambientes tropicales
+const AIR_QUALITY_CONFIG = {
+  EXCELLENT: 500,         // Índice MQ135 - Aire muy limpio (exterior ventilado)
+  GOOD: 1000,             // Buena calidad - Ventilación adecuada
+  MODERATE: 2500,         // Moderada - Ventilación insuficiente
+  POOR: 5000,             // Pobre - Contaminación notable
+  HAZARDOUS: 8000,        // Peligroso - Alta contaminación
+  SENSOR_MIN: 300,        // Límite práctico inferior del MQ135
+  SENSOR_MAX: 10000,      // Límite práctico superior del MQ135
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// FUNCIONES DE NORMALIZACIÓN
+// ═══════════════════════════════════════════════════════════════════════
+
 /**
- * Normaliza un valor usando un RANGO ÓPTIMO con degradación gradual
- * @param {number} value - Valor del sensor
- * @param {number} optimalMin - Límite inferior ideal
- * @param {number} optimalMax - Límite superior ideal
- * @param {number} toleranceLow - Distancia hacia abajo antes de 0%
- * @param {number} toleranceHigh - Distancia hacia arriba antes de 0%
- * @returns {number} Puntuación normalizada (0 a 1)
+ * Normaliza valores con rango óptimo central y degradación gradual
+ * Usado para temperatura y humedad (ideal: estar dentro del rango)
+ *
+ * @param {number} value - Valor medido del sensor
+ * @param {number} optimalMin - Límite inferior del rango óptimo
+ * @param {number} optimalMax - Límite superior del rango óptimo
+ * @param {number} toleranceLow - Distancia hacia abajo antes de score=0
+ * @param {number} toleranceHigh - Distancia hacia arriba antes de score=0
+ * @returns {number} Score normalizado entre 0 y 1
  */
 const normalizeOptimalRange = (value, optimalMin, optimalMax, toleranceLow, toleranceHigh) => {
-  // Dentro del rango óptimo = 100%
+  // Dentro del rango óptimo → 100%
   if (value >= optimalMin && value <= optimalMax) {
-    return 1;
+    return 1.0;
   }
 
-  // Por debajo del rango óptimo
+  // Por debajo del rango óptimo → degradación lineal
   if (value < optimalMin) {
-    const lowFailure = optimalMin - toleranceLow;
-    if (value <= lowFailure) return 0;
-    return (value - lowFailure) / (optimalMin - lowFailure);
+    const failurePoint = optimalMin - toleranceLow;
+    if (value <= failurePoint) return 0;
+    return (value - failurePoint) / (optimalMin - failurePoint);
   }
 
-  // Por encima del rango óptimo
+  // Por encima del rango óptimo → degradación lineal
   if (value > optimalMax) {
-    const highFailure = optimalMax + toleranceHigh;
-    if (value >= highFailure) return 0;
-    return (highFailure - value) / (highFailure - optimalMax);
+    const failurePoint = optimalMax + toleranceHigh;
+    if (value >= failurePoint) return 0;
+    return (failurePoint - value) / (failurePoint - optimalMax);
   }
 
   return 0;
 };
 
 /**
- * FUNCIÓN PRINCIPAL: Calcula el porcentaje de salud ambiental
- * Adaptado para Puerto Maldonado con sensores DHT11 y MQ135
+ * Normaliza valores donde "menos es mejor" (inverso)
+ * Usado para calidad del aire (menor índice = mejor aire)
+ *
+ * @param {number} value - Valor medido del sensor MQ135
+ * @param {Object} thresholds - Umbrales de calidad {EXCELLENT, GOOD, MODERATE, POOR, HAZARDOUS}
+ * @returns {number} Score normalizado entre 0 y 1
+ */
+const normalizeAirQuality = (value, thresholds) => {
+  // Aire excelente
+  if (value <= thresholds.EXCELLENT) {
+    return 1.0;
+  }
+
+  // Buena calidad (degradación suave: 100% → 80%)
+  if (value <= thresholds.GOOD) {
+    const range = thresholds.GOOD - thresholds.EXCELLENT;
+    const position = (value - thresholds.EXCELLENT) / range;
+    return 1.0 - (0.2 * position);
+  }
+
+  // Calidad moderada (degradación media: 80% → 50%)
+  if (value <= thresholds.MODERATE) {
+    const range = thresholds.MODERATE - thresholds.GOOD;
+    const position = (value - thresholds.GOOD) / range;
+    return 0.8 - (0.3 * position);
+  }
+
+  // Calidad pobre (degradación acelerada: 50% → 20%)
+  if (value <= thresholds.POOR) {
+    const range = thresholds.POOR - thresholds.MODERATE;
+    const position = (value - thresholds.MODERATE) / range;
+    return 0.5 - (0.3 * position);
+  }
+
+  // Calidad peligrosa (degradación crítica: 20% → 0%)
+  if (value <= thresholds.HAZARDOUS) {
+    const range = thresholds.HAZARDOUS - thresholds.POOR;
+    const position = (value - thresholds.POOR) / range;
+    return 0.2 - (0.2 * position);
+  }
+
+  // Fuera de escala
+  return 0;
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// FUNCIÓN PRINCIPAL DE CÁLCULO
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Calcula el porcentaje de salud ambiental basado en múltiples parámetros
+ *
+ * @param {Object} sensorData - Datos de los sensores
+ * @param {number} sensorData.temperature - Temperatura en °C (DHT11)
+ * @param {number} sensorData.humidity - Humedad relativa en % (DHT11)
+ * @param {number} sensorData.airQuality - Índice de calidad del aire (MQ135)
+ * @returns {number} Porcentaje de salud ambiental (0-100)
  */
 export const PercentageCalculation = (sensorData) => {
   if (!sensorData) return 0;
 
-  // ═══════════════════════════════════════════════════════════
-  // CONFIGURACIÓN DE PESOS DINÁMICOS
-  // ═══════════════════════════════════════════════════════════
-  const BASE_WEIGHTS = {
-    temperature: 0.30,  // 30% del peso total
-    humidity: 0.30,     // 30% del peso total
-    airQuality: 0.40,   // 40% del peso total (más crítico para salud)
-  };
-
-  // ═══════════════════════════════════════════════════════════
-  // PARÁMETROS DE REFERENCIA CIENTÍFICOS
-  // ═══════════════════════════════════════════════════════════
-  const REFERENCE = {
-    // ─────────────────────────────────────────────────────────
-    // TEMPERATURA (DHT11 - Precisión ±2°C)
-    // ─────────────────────────────────────────────────────────
-    // Rango óptimo: 22-26°C (confort térmico tropical)
-    // Puerto Maldonado: Clima tropical cálido (18-32°C típico)
-    // Tolerancia adaptada a condiciones locales
-    TEMP_MIN: 22,           // Límite inferior de confort
-    TEMP_MAX: 26,           // Límite superior de confort
-    TEMP_TOLERANCE_LOW: 10,  // 22-10=12°C → 0% salud (frío extremo)
-    TEMP_TOLERANCE_HIGH: 12, // 26+12=38°C → 0% salud (calor extremo)
-
-    // ─────────────────────────────────────────────────────────
-    // HUMEDAD RELATIVA (DHT11 - Precisión ±5%)
-    // ─────────────────────────────────────────────────────────
-    // Rango óptimo: 50-70% (confort en trópico húmedo)
-    // Puerto Maldonado: Humedad alta (60-90% frecuente)
-    HUM_MIN: 50,            // Límite inferior ideal
-    HUM_MAX: 70,            // Límite superior ideal
-    HUM_TOLERANCE_LOW: 30,   // 50-30=20% → 0% salud (muy seco)
-    HUM_TOLERANCE_HIGH: 25,  // 70+25=95% → 0% salud (saturación)
-
-    // ─────────────────────────────────────────────────────────
-    // CALIDAD DEL AIRE - CO₂ (MQ135 - Analógico)
-    // ─────────────────────────────────────────────────────────
-    // Baseline: 400-450 ppm (aire exterior limpio)
-    // ASHRAE: <1000 ppm (aceptable en interiores)
-    // OMS/ACGIH: >2000 ppm (problemas cognitivos)
-    // Peligro: >5000 ppm (TWA industrial máximo)
-    CO2_MIN: 400,     // Aire limpio exterior (100% salud)
-    CO2_WARNING: 1000, // Umbral ASHRAE (buena ventilación)
-    CO2_POOR: 2000,    // Problemas de concentración/fatiga
-    CO2_DANGER: 5000,  // Límite seguridad industrial (0% salud)
-  };
-
-  // ═══════════════════════════════════════════════════════════
-  // CÁLCULO DE PUNTUACIONES CON VALIDACIÓN ROBUSTA
-  // ═══════════════════════════════════════════════════════════
-
   let totalScore = 0;
   let activeWeights = 0;
 
-  // ───────────────────────────────────────────────────────────
-  // 🌡️ TEMPERATURA
-  // ───────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────
+  // EVALUACIÓN DE TEMPERATURA
+  // ─────────────────────────────────────────────────────────────────────
   const isTempValid =
     typeof sensorData.temperature === 'number' &&
     !isNaN(sensorData.temperature) &&
-    sensorData.temperature >= -40 && // Límite físico DHT11
-    sensorData.temperature <= 80;    // Límite físico DHT11
+    sensorData.temperature >= TEMPERATURE_CONFIG.SENSOR_MIN &&
+    sensorData.temperature <= TEMPERATURE_CONFIG.SENSOR_MAX;
 
   if (isTempValid) {
     const tempScore = normalizeOptimalRange(
       sensorData.temperature,
-      REFERENCE.TEMP_MIN,
-      REFERENCE.TEMP_MAX,
-      REFERENCE.TEMP_TOLERANCE_LOW,
-      REFERENCE.TEMP_TOLERANCE_HIGH
+      TEMPERATURE_CONFIG.OPTIMAL_MIN,
+      TEMPERATURE_CONFIG.OPTIMAL_MAX,
+      TEMPERATURE_CONFIG.TOLERANCE_LOW,
+      TEMPERATURE_CONFIG.TOLERANCE_HIGH
     );
-    activeWeights += BASE_WEIGHTS.temperature;
-    totalScore += tempScore * BASE_WEIGHTS.temperature;
+
+    activeWeights += SENSOR_WEIGHTS.temperature;
+    totalScore += tempScore * SENSOR_WEIGHTS.temperature;
   }
 
-  // ───────────────────────────────────────────────────────────
-  // 💧 HUMEDAD RELATIVA
-  // ───────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────
+  // EVALUACIÓN DE HUMEDAD
+  // ─────────────────────────────────────────────────────────────────────
   const isHumValid =
     typeof sensorData.humidity === 'number' &&
     !isNaN(sensorData.humidity) &&
-    sensorData.humidity > 0 &&  // ← Ya lo tienes
-    sensorData.humidity < 100;
+    sensorData.humidity > HUMIDITY_CONFIG.SENSOR_MIN &&
+    sensorData.humidity < HUMIDITY_CONFIG.SENSOR_MAX;
 
   if (isHumValid) {
     const humScore = normalizeOptimalRange(
       sensorData.humidity,
-      REFERENCE.HUM_MIN,
-      REFERENCE.HUM_MAX,
-      REFERENCE.HUM_TOLERANCE_LOW,
-      REFERENCE.HUM_TOLERANCE_HIGH
+      HUMIDITY_CONFIG.OPTIMAL_MIN,
+      HUMIDITY_CONFIG.OPTIMAL_MAX,
+      HUMIDITY_CONFIG.TOLERANCE_LOW,
+      HUMIDITY_CONFIG.TOLERANCE_HIGH
     );
-    activeWeights += BASE_WEIGHTS.humidity;
-    totalScore += humScore * BASE_WEIGHTS.humidity;
+
+    activeWeights += SENSOR_WEIGHTS.humidity;
+    totalScore += humScore * SENSOR_WEIGHTS.humidity;
   }
 
-  // ───────────────────────────────────────────────────────────
-  // 🌫️ CALIDAD DEL AIRE (CO₂ - MQ135)
-  // ───────────────────────────────────────────────────────────
-  // El MQ135 devuelve un valor analógico (0-1023) que debe convertirse
-  // a PPM mediante calibración. Aquí asumimos que recibes PPM ya convertido.
+  // ─────────────────────────────────────────────────────────────────────
+  // EVALUACIÓN DE CALIDAD DEL AIRE
+  // ─────────────────────────────────────────────────────────────────────
   const isAQValid =
     typeof sensorData.airQuality === 'number' &&
     !isNaN(sensorData.airQuality) &&
-    sensorData.airQuality >= 0;
+    sensorData.airQuality >= AIR_QUALITY_CONFIG.SENSOR_MIN &&
+    sensorData.airQuality <= AIR_QUALITY_CONFIG.SENSOR_MAX;
 
   if (isAQValid) {
-    let aqScore;
+    const aqScore = normalizeAirQuality(
+      sensorData.airQuality,
+      AIR_QUALITY_CONFIG
+    );
 
-    if (sensorData.airQuality <= REFERENCE.CO2_MIN) {
-      // Aire excepcional (exterior limpio)
-      aqScore = 1;
-    } else if (sensorData.airQuality <= REFERENCE.CO2_WARNING) {
-      // Bueno: entre aire limpio y límite ASHRAE
-      // Degradación suave: 400→1000 ppm = 100%→80%
-      const range = REFERENCE.CO2_WARNING - REFERENCE.CO2_MIN;
-      const excess = sensorData.airQuality - REFERENCE.CO2_MIN;
-      aqScore = 1 - (0.2 * (excess / range));
-    } else if (sensorData.airQuality <= REFERENCE.CO2_POOR) {
-      // Moderado: ventilación insuficiente
-      // 1000→2000 ppm = 80%→40%
-      const range = REFERENCE.CO2_POOR - REFERENCE.CO2_WARNING;
-      const excess = sensorData.airQuality - REFERENCE.CO2_WARNING;
-      aqScore = 0.8 - (0.4 * (excess / range));
-    } else if (sensorData.airQuality <= REFERENCE.CO2_DANGER) {
-      // Pobre a peligroso: efectos en salud
-      // 2000→5000 ppm = 40%→0%
-      const range = REFERENCE.CO2_DANGER - REFERENCE.CO2_POOR;
-      const excess = sensorData.airQuality - REFERENCE.CO2_POOR;
-      aqScore = 0.4 - (0.4 * (excess / range));
-    } else {
-      // Crítico: >5000 ppm
-      aqScore = 0;
-    }
-
-    activeWeights += BASE_WEIGHTS.airQuality;
-    totalScore += aqScore * BASE_WEIGHTS.airQuality;
+    activeWeights += SENSOR_WEIGHTS.airQuality;
+    totalScore += aqScore * SENSOR_WEIGHTS.airQuality;
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // NORMALIZACIÓN Y RESULTADO FINAL
-  // ═══════════════════════════════════════════════════════════
-
+  // ─────────────────────────────────────────────────────────────────────
+  // CÁLCULO FINAL
+  // ─────────────────────────────────────────────────────────────────────
   if (activeWeights === 0) {
     return 0; // Sin sensores válidos
   }
 
   // Normalizar por el peso total de sensores activos
-  const finalScoreNormalized = totalScore / activeWeights;
+  const normalizedScore = totalScore / activeWeights;
 
   // Retornar porcentaje entero (0-100)
-  return Math.round(finalScoreNormalized * 100);
+  return Math.round(normalizedScore * 100);
 };
 
-// ═══════════════════════════════════════════════════════════
-// FUNCIÓN AUXILIAR: COLOR POR CATEGORÍA DE SALUD
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+// FUNCIONES AUXILIARES PARA UI
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Retorna el color asociado al porcentaje de salud
+ * Escala basada en índices de calidad del aire estándar (AQI)
+ *
+ * @param {number} percentage - Porcentaje de salud (0-100)
+ * @returns {string} Código hexadecimal de color
+ */
 export const getColorByPercentage = (percentage) => {
-  if (percentage >= 80) return "#10B981"; // Verde Esmeralda (Excelente)
-  if (percentage >= 60) return "#84CC16"; // Lima (Bueno)
-  if (percentage >= 40) return "#F59E0B"; // Ámbar (Moderado)
-  if (percentage >= 20) return "#EF4444"; // Rojo (Pobre)
-  return "#991B1B";                       // Rojo Oscuro (Peligroso)
+  if (percentage >= 80) return "#10B981"; // Verde - Excelente
+  if (percentage >= 60) return "#84CC16"; // Lima - Bueno
+  if (percentage >= 40) return "#F59E0B"; // Ámbar - Moderado
+  if (percentage >= 20) return "#EF4444"; // Rojo - Pobre
+  return "#991B1B";                       // Rojo oscuro - Peligroso
 };
 
-// ═══════════════════════════════════════════════════════════
-// FUNCIÓN AUXILIAR: ETIQUETA DESCRIPTIVA
-// ═══════════════════════════════════════════════════════════
+/**
+ * Retorna la etiqueta descriptiva del nivel de salud
+ *
+ * @param {number} percentage - Porcentaje de salud (0-100)
+ * @returns {string} Etiqueta descriptiva
+ */
 export const getHealthLabel = (percentage) => {
   if (percentage >= 80) return "Excelente";
   if (percentage >= 60) return "Bueno";
   if (percentage >= 40) return "Moderado";
   if (percentage >= 20) return "Pobre";
   return "Peligroso";
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// EXPORTACIÓN DE CONFIGURACIONES (PARA TESTING Y ESCALABILIDAD)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const CONFIG = {
+  WEIGHTS: SENSOR_WEIGHTS,
+  TEMPERATURE: TEMPERATURE_CONFIG,
+  HUMIDITY: HUMIDITY_CONFIG,
+  AIR_QUALITY: AIR_QUALITY_CONFIG,
 };
