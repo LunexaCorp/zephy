@@ -6,7 +6,7 @@ dotenv.config();
 
 const addIndexes = async () => {
   try {
-    console.log(pc.blue('🔗 Conectando a MongoDB...'));
+    console.log(pc.blue('Conectando a MongoDB...'));
 
     await mongoose.connect(process.env.MONGODB_URI || process.env.DATABASE_URL);
 
@@ -15,7 +15,7 @@ const addIndexes = async () => {
     const db = mongoose.connection.db;
 
     // 1. Índices para SensorReading
-    console.log(pc.cyan('\n📊 Creando índices para SensorReading...'));
+    console.log(pc.cyan('\nCreando índices para SensorReading...'));
 
     await db.collection('sensorreadings').createIndex(
       { device: 1, timestamp: -1 },
@@ -30,31 +30,31 @@ const addIndexes = async () => {
     console.log(pc.green('  ✓ Índice timestamp creado'));
 
     // 2. Índices para Device
-    console.log(pc.cyan('\n📱 Creando índices para Device...'));
+    console.log(pc.cyan('\nCreando índices para Device...'));
 
     await db.collection('devices').createIndex(
       { location: 1, isEnabled: 1 },
       { name: 'location_enabled_idx' }
     );
-    console.log(pc.green('  ✓ Índice location_enabled creado'));
+    console.log(pc.green('  Índice location_enabled creado'));
 
     await db.collection('devices').createIndex(
       { isEnabled: 1 },
       { name: 'enabled_idx' }
     );
-    console.log(pc.green('  ✓ Índice enabled creado'));
+    console.log(pc.green('  Índice enabled creado'));
 
     // 3. Índices para Location
-    console.log(pc.cyan('\n📍 Creando índices para Location...'));
+    console.log(pc.cyan('\nCreando índices para Location...'));
 
     await db.collection('locations').createIndex(
       { name: 1 },
       { name: 'name_idx' }
     );
-    console.log(pc.green('  ✓ Índice name creado'));
+    console.log(pc.green('  Índice name creado'));
 
     // Verificar índices creados
-    console.log(pc.cyan('\n🔍 Verificando índices...'));
+    console.log(pc.cyan('\nVerificando índices...'));
 
     const sensorIndexes = await db.collection('sensorreadings').indexes();
     console.log(pc.gray('  SensorReading índices:'), sensorIndexes.map(i => i.name));
@@ -65,10 +65,10 @@ const addIndexes = async () => {
     const locationIndexes = await db.collection('locations').indexes();
     console.log(pc.gray('  Location índices:'), locationIndexes.map(i => i.name));
 
-    console.log(pc.green('\n✅ Todos los índices creados exitosamente'));
+    console.log(pc.green('\nTodos los índices creados exitosamente'));
 
     // Analizar rendimiento
-    console.log(pc.cyan('\n📈 Estadísticas de colecciones:'));
+    console.log(pc.cyan('\nEstadísticas de colecciones:'));
 
     const sensorStats = await db.collection('sensorreadings').stats();
     console.log(pc.gray(`  SensorReading: ${sensorStats.count} documentos, ${(sensorStats.size / 1024 / 1024).toFixed(2)} MB`));
@@ -80,10 +80,10 @@ const addIndexes = async () => {
     console.log(pc.gray(`  Location: ${locationStats.count} documentos, ${(locationStats.size / 1024).toFixed(2)} KB`));
 
   } catch (error) {
-    console.error(pc.red('❌ Error al crear índices:'), error);
+    console.error(pc.red('Error al crear índices:'), error);
   } finally {
     await mongoose.disconnect();
-    console.log(pc.yellow('\n👋 Desconectado de MongoDB'));
+    console.log(pc.yellow('\nDesconectado de MongoDB'));
     process.exit(0);
   }
 };
