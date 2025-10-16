@@ -1,0 +1,17 @@
+# ========================================
+# robots.txt (colócalo en /public/robots.txt)
+# ========================================
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://zephy-mdd.vercel.app/sitemap.xml
+
+# Crawl-delay para bots agresivos
+User-agent: Googlebot
+Crawl-delay: 0
+
+User-agent: Bingbot
+Crawl-delay: 1
+
