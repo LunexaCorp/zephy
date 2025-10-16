@@ -2,14 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Página principal -->
-  <url>
-    <loc>https://zephy-mdd.vercel.app/</loc>
-    <lastmod>2025-10-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
   <!-- Dashboard/Medidor -->
   <url>
     <loc>https://zephy-mdd.vercel.app/</loc>
