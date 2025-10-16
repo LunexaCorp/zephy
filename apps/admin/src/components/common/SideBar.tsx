@@ -14,13 +14,13 @@ import {
 } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import {Sigma} from "lucide-react";
 
 const menuItems = [
   { name: "Dashboard", icon: HomeIcon, path: "/" },
   { name: "Dispositivos", icon: CpuChipIcon, path: "/devices" },
   { name: "Localidades", icon: MapPinIcon, path: "/locations" },
-  { name: "Usuarios", icon: UserGroupIcon, path: "/users" },
-  { name: "Configuración", icon: Cog6ToothIcon, path: "/settings" },
+  { name: "Configuración", icon: Sigma, path: "/environmental-config" },
 ];
 
 export default function Sidebar() {

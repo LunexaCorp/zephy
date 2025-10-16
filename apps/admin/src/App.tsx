@@ -7,6 +7,7 @@ import Sidebar from "./components/common/SideBar.tsx";
 import DevicesPage from "./pages/Devices.tsx";
 import CreateLocationPage from "./pages/CreateLocation.tsx";
 import EditLocationPage from "./pages/EditLocationPage.tsx";
+import EnvironmentalConfig from "./pages/EnvironmentalConfig.tsx";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
               <Route path="/devices" element={<DevicesPage />} />
               <Route path="/locations/new" element={<CreateLocationPage />} />
               <Route path="/locations/edit/:id" element={<EditLocationPage />} />
+              <Route path="/environmental-config" element={<EnvironmentalConfig />} />
             </Routes>
           </div>
         </main>

@@ -1,5 +1,5 @@
-import { MapPin, Cpu } from 'lucide-react';
-import { motion } from 'framer-motion';
+import {MapPin, Cpu, Sigma, Settings} from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Home() {
   return (
@@ -12,7 +12,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-16">
+      <main className="container mx-auto px-4 py-12">
         <div className="flex flex-col items-center justify-center gap-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -28,15 +28,16 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl mt-8">
-            {/* Locations Link */}
+          {/* Tarjetas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mt-8">
+            {/* Locations */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <a href="/locations">
-                <div className="group relative overflow-hidden rounded-2xl bg-blue-50 border border-blue-200 p-8 hover:border-blue-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                <div className="group relative overflow-hidden rounded-2xl bg-blue-50 border border-blue-200 p-6 hover:border-blue-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
                   <div className="absolute inset-0 bg-blue-100/0 group-hover:bg-blue-100/50 transition-all duration-300" />
                   <div className="relative z-10 flex flex-col items-center gap-4">
                     <MapPin className="w-12 h-12 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
@@ -51,14 +52,14 @@ export default function Home() {
               </a>
             </motion.div>
 
-            {/* Devices Link */}
+            {/* Devices */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <a href="/devices">
-                <div className="group relative overflow-hidden rounded-2xl bg-purple-50 border border-purple-200 p-8 hover:border-purple-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                <div className="group relative overflow-hidden rounded-2xl bg-purple-50 border border-purple-200 p-6 hover:border-purple-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
                   <div className="absolute inset-0 bg-purple-100/0 group-hover:bg-purple-100/50 transition-all duration-300" />
                   <div className="relative z-10 flex flex-col items-center gap-4">
                     <Cpu className="w-12 h-12 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
@@ -73,6 +74,29 @@ export default function Home() {
               </a>
             </motion.div>
           </div>
+
+          {/* Segunda fila */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="w-full max-w-sm mt-4"
+          >
+            <a href="/environmental-config">
+              <div className="group relative overflow-hidden rounded-2xl bg-emerald-50 border border-emerald-200 p-6 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                <div className="absolute inset-0 bg-emerald-100/0 group-hover:bg-emerald-100/50 transition-all duration-300" />
+                <div className="relative z-10 flex flex-col items-center gap-4">
+                  <Sigma className="w-12 h-12 text-emerald-600 group-hover:scale-110 transition-transform duration-300" />
+                  <h3 className="text-2xl font-semibold text-gray-900">
+                    Configuración Ambiental
+                  </h3>
+                  <p className="text-gray-600 text-center text-sm">
+                    Define rangos óptimos y pesos por ubicación
+                  </p>
+                </div>
+              </div>
+            </a>
+          </motion.div>
         </div>
       </main>
     </div>
