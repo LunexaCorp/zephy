@@ -77,10 +77,15 @@ const MeasurerPage = () => {
     sensorData: {temperature: 0, humidity: 0, airQuality: 0},
   };
 
-  // 🛠️ Definición del SEO Dinámico
-  const seoTitle = `Dashboard - ${currentData.locationName}`;
-  const seoDescription = `Monitoreo en tiempo real de ${currentData.locationName}. Temperatura: ${currentData.sensorData.temperature}°C, Humedad: ${currentData.sensorData.humidity}%, Calidad del aire en tiempo real.`;
+  const locationName = currentData?.locationName || 'Dashboard Ambiental';
 
+  // Usamos ?. para acceder a sensorData y luego a sus propiedades.
+  // El || 0 asegura que siempre es un número en la cadena de texto.
+  const temperature = currentData?.sensorData?.temperature || 0;
+  const humidity = currentData?.sensorData?.humidity || 0;
+
+  const seoTitle = `Dashboard - ${locationName}`;
+  const seoDescription = `Monitoreo en tiempo real de ${locationName}. Temperatura: ${temperature}°C, Humedad: ${humidity}%, Calidad del aire en tiempo real.`;
   return (
     <>
       <SEOHelmet
