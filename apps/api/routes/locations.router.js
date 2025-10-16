@@ -6,7 +6,7 @@ import {
   deleteLocation,
   createLocation,
   updateLocation
-} from '../controllers/locations.controller.js';
+} from '../controllers/location.controller.js';
 
 const router = Router();
 

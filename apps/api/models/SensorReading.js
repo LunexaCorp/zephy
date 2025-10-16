@@ -14,7 +14,7 @@ const sensorReadingSchema = new mongoose.Schema({
     index: true // Indice clave para series de tiempo
   },
   // Datos Ambientales
-  temperature: { type: Number, required: true },
+  temperature: { type: Number  },
   humidity: { type: Number },
   co2: { type: Number },
   airQuality: { type: Number },

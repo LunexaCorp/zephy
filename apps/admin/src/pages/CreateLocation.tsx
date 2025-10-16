@@ -6,6 +6,7 @@ import { createLocation } from "../services/axios.config.ts";
 import { createDevice } from "../services/axios.config.ts";
 
 import Swal from 'sweetalert2';
+import {Link} from "react-router-dom";
 
 export default function CreateLocationPage() {
   const [step, setStep] = useState(1);
@@ -237,8 +238,8 @@ export default function CreateLocationPage() {
           >
             <Check className="w-12 h-12 text-white" />
           </motion.div>
-          <h2 className="text-3xl font-bold text-white mb-2">¡Creación Exitosa!</h2>
-          <p className="text-gray-300">Tu ubicación y dispositivo han sido configurados correctamente</p>
+          <h2 className="text-3xl font-bold text-black mb-2">¡Creación Exitosa!</h2>
+          <p className="text-black">Tu ubicación y dispositivo han sido configurados correctamente</p>
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -247,6 +248,13 @@ export default function CreateLocationPage() {
           >
             <Sparkles className="w-8 h-8 text-yellow-400 mx-auto animate-pulse" />
           </motion.div>
+
+          <Link
+            to={"/locations"}
+            className="inline-flex items-center gap-2 px-4 py-2 mt-8 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md"
+          >
+            ← Volver
+          </Link>
         </div>
       </motion.div>
     );

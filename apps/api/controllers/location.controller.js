@@ -1,5 +1,7 @@
 import Location from '../models/Location.js';
 import Device from '../models/Device.js';
+import { reloadTopics } from '../mqtt/client.js';
+import pc from 'picocolors';
 
 export async function getLocations(req, res) {
   try {
@@ -14,10 +16,11 @@ export async function getLocationById(req, res) {
   try {
     const location = await Location.findById(req.params.id);
 
-    if (!location)
+    if (!location) {
       return res.status(404).json({
         error: `No se encontró la ubicación con el id: ${req.params.id}`
       });
+    }
 
     res.status(200).json(location);
   } catch (err) {
@@ -35,12 +38,10 @@ export async function getDevicesByLocationId(req, res) {
   }
 }
 
-// Método para eliminar ubicación
 export async function deleteLocation(req, res) {
   try {
     const { id } = req.params;
 
-    // Busca y elimina la ubicación
     const location = await Location.findByIdAndDelete(id);
 
     if (!location) {
@@ -49,19 +50,29 @@ export async function deleteLocation(req, res) {
       });
     }
 
-    // Opcional: También eliminar los dispositivos asociados
-    // await Device.deleteMany({ location: id });
+    // ⚠️ Advertencia: Los dispositivos asociados quedarán sin ubicación
+    // Puedes descomentar la siguiente línea para eliminarlos también
+    await Device.deleteMany({ location: id });
+
+    // ✅ Recargar topics después de eliminar (porque los dispositivos asociados quedarán huérfanos)
+    try {
+      const NODE_ENV = process.env.NODE_ENV || 'development';
+      await reloadTopics(NODE_ENV);
+      console.log(pc.green('✓ Topics MQTT recargados tras eliminar ubicación'));
+    } catch (reloadErr) {
+      console.warn(pc.yellow('⚠️ No se pudieron recargar los topics:'), reloadErr.message);
+    }
 
     res.status(200).json({
       message: 'Ubicación eliminada exitosamente',
-      location
+      location,
+      warning: 'Los dispositivos asociados ahora están sin ubicación'
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-// Métodos CREATE y UPDATE si los necesitas
 export async function createLocation(req, res) {
   try {
     const { name, description, img, coordinates } = req.body;
@@ -73,10 +84,16 @@ export async function createLocation(req, res) {
       coordinates
     });
 
-    console.log(newLocation)
-
     const savedLocation = await newLocation.save();
-    res.status(201).json(savedLocation);
+
+    // ℹ️ No es necesario recargar topics aquí porque:
+    // - Los topics se generan desde los DISPOSITIVOS, no desde las ubicaciones
+    // - Cuando crees un dispositivo para esta ubicación, los topics se recargarán automáticamente
+
+    res.status(201).json({
+      ...savedLocation.toObject(),
+      info: 'Crea dispositivos para esta ubicación usando POST /api/v1/devices'
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -97,6 +114,25 @@ export async function updateLocation(req, res) {
       return res.status(404).json({
         error: `No se encontró la ubicación con el id: ${id}`
       });
+    }
+
+    // ✅ Si se cambió el nombre, recargar topics (porque los topics usan el nombre de la ubicación)
+    if (updates.name) {
+      try {
+        const NODE_ENV = process.env.NODE_ENV || 'development';
+        await reloadTopics(NODE_ENV);
+        console.log(pc.green('✓ Topics MQTT recargados tras actualizar nombre de ubicación'));
+
+        return res.status(200).json({
+          ...location.toObject(),
+          mqtt: {
+            reloaded: true,
+            reason: 'El nombre de la ubicación cambió, los topics se actualizaron'
+          }
+        });
+      } catch (reloadErr) {
+        console.warn(pc.yellow('⚠️ No se pudieron recargar los topics:'), reloadErr.message);
+      }
     }
 
     res.status(200).json(location);
