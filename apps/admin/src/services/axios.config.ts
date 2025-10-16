@@ -95,20 +95,6 @@ export const deleteLocation = async (locationId: string) => {
   }
 };
 
-// Agregar endpoints de dispositivos
-export const getDevices = async () => {
-  try {
-    const response = await api.get("/devices");
-    return response.data.map((device: any) => ({
-      ...device,
-      id: device._id,
-    }));
-  } catch (error) {
-    console.error("Error fetching devices:", error);
-    return [];
-  }
-};
-
 // POST: Crear nuevo dispositivo
 export const createDevice = async (device: {
   name: string;
@@ -164,5 +150,14 @@ export const uploadImage = async (file: File) => {
       success: false,
       error: error.response?.data?.error || "Error al subir imagen",
     };
+  }
+};
+
+export const getLocationById = async (id: string) => {
+  try {
+    const res = await api.get(`/locations/${id}`);
+    return { success: true, data: res.data };
+  } catch (err: any) {
+    return { success: false, error: err.response?.data?.error || err.message };
   }
 };

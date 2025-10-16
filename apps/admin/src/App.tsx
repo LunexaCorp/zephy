@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/common/SideBar.tsx";
 import DevicesPage from "./pages/Devices.tsx";
 import CreateLocationPage from "./pages/CreateLocation.tsx";
+import EditLocationPage from "./pages/EditLocationPage.tsx";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
               <Route path="/locations" element={<LocationPage />} />
               <Route path="/devices" element={<DevicesPage />} />
               <Route path="/locations/new" element={<CreateLocationPage />} />
+              <Route path="/locations/edit/:id" element={<EditLocationPage />} />
             </Routes>
           </div>
         </main>
