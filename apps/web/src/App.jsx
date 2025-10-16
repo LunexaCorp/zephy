@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// App.jsx
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Measurer from "./pages/MeasurerPage.jsx";
 import Ranking from "./pages/RankingPage.jsx";
@@ -8,7 +9,7 @@ import NotFound from "./components/common/NotFound.jsx";
 
 const App = () => {
   return (
-    <Router>
+    <>
       <NavBar />
       <Routes>
         <Route path="/" element={<Measurer />} />
@@ -16,11 +17,16 @@ const App = () => {
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/mapa" element={<MapPage />} />
         {/* Cualquier ruta que no exista */}
-        <Route path="*" element={<div className="flex justify-center items-center w-screen h-screen">
-          <NotFound />
-        </div>} />
+        <Route
+          path="*"
+          element={
+            <div className="flex justify-center items-center w-screen h-screen">
+              <NotFound />
+            </div>
+          }
+        />
       </Routes>
-    </Router>
+    </>
   );
 };
 

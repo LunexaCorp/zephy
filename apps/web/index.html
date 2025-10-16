@@ -1,13 +1,152 @@
 <!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/zephy.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zephy</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="es-PE">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- SEO Básico -->
+  <title>Zephy - Monitoreo Ambiental en Tiempo Real | Puerto Maldonado</title>
+  <meta name="description" content="Sistema IoT de monitoreo climático en tiempo real para Puerto Maldonado. Consulta temperatura, humedad y calidad del aire en diferentes zonas de la ciudad antes de salir." />
+  <meta name="keywords" content="zephy, puerto maldonado, monitoreo ambiental, IoT, temperatura, calidad del aire, clima tiempo real, madre de dios, sensores climáticos, ola de calor" />
+  <meta name="author" content="Yohan Villar & Franco Yupanqui - UNAMAD" />
+  <meta name="content-language" content="es-PE" />
+  <meta name="distribution" content="global" />
+  <meta name="geo.region" content="PE-MDD" />
+  <meta name="geo.placename" content="Puerto Maldonado" />
+  <meta name="geo.position" content="-12.593889;-69.189444" />
+  <meta name="ICBM" content="-12.593889, -69.189444" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="theme-color" content="#10b981" />
+  <meta name="msapplication-TileColor" content="#10b981" />
+  <meta name="copyright" content="© 2025 Zephy. Todos los derechos reservados." />
+
+  <!-- Canonical y Hreflang -->
+  <link rel="canonical" href="https://zephy.vercel.app/" />
+  <link rel="alternate" hreflang="es-PE" href="https://zephy.vercel.app/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zephy.vercel.app/" />
+  <meta property="og:title" content="Zephy - Monitoreo Ambiental en Tiempo Real" />
+  <meta property="og:description" content="Consulta las condiciones climáticas en tiempo real de Puerto Maldonado. Sistema IoT que te ayuda a planificar tus actividades al aire libre de forma segura." />
+  <meta property="og:image" content="https://zephy.vercel.app/og-zephy-dashboard.jpg" />
+  <meta property="og:locale" content="es_PE" />
+  <meta property="og:site_name" content="Zephy" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://zephy.vercel.app/" />
+  <meta name="twitter:title" content="Zephy - Monitoreo Ambiental Puerto Maldonado" />
+  <meta name="twitter:description" content="Sistema IoT de monitoreo climático en tiempo real. Consulta temperatura, humedad y calidad del aire antes de salir." />
+  <meta name="twitter:image" content="https://zephy.vercel.app/twitter-zephy.jpg" />
+  <meta name="twitter:creator" content="@zephy_app" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/zephy.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Preconnect (rendimiento) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Datos estructurados combinados -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://zephy.vercel.app#organization",
+          "name": "Zephy",
+          "url": "https://zephy.vercel.app",
+          "logo": "https://zephy.vercel.app/zephy.svg",
+          "description": "Proyecto universitario de monitoreo ambiental IoT en tiempo real",
+          "foundingDate": "2025",
+          "founders": [
+            { "@type": "Person", "name": "Yohan Villar" },
+            { "@type": "Person", "name": "Franco Yupanqui" }
+          ],
+          "memberOf": {
+            "@type": "EducationalOrganization",
+            "name": "UNAMAD",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Puerto Maldonado",
+              "addressRegion": "Madre de Dios",
+              "addressCountry": "PE"
+            }
+          },
+          "sameAs": [
+            "https://github.com/yohanvillarp",
+            "https://github.com/francoyupanqui"
+          ]
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://zephy.vercel.app#webapp",
+          "name": "Zephy",
+          "applicationCategory": "UtilityApplication",
+          "operatingSystem": "Web Browser",
+          "url": "https://zephy.vercel.app",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "description": "Plataforma web de monitoreo ambiental en tiempo real con sensores IoT en Puerto Maldonado",
+          "featureList": [
+            "Monitoreo de temperatura en tiempo real",
+            "Medición de calidad del aire",
+            "Medición de humedad ambiental",
+            "Mapa interactivo de sensores",
+            "Ranking de zonas ambientales",
+            "Consejos según condiciones climáticas"
+          ],
+          "screenshot": "https://zephy.vercel.app/screenshot-dashboard.jpg",
+          "publisher": { "@id": "https://zephy.vercel.app#organization" }
+        },
+        {
+          "@type": "Place",
+          "name": "Puerto Maldonado",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": -12.593889,
+            "longitude": -69.189444
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Puerto Maldonado",
+            "addressRegion": "Madre de Dios",
+            "addressCountry": "PE"
+          }
+        }
+      ]
+    }
+  </script>
+</head>
+
+<body>
+<!-- Accesibilidad y SEO -->
+<noscript>
+  <div style="text-align: center; padding: 50px; font-family: system-ui;">
+    <h1>Zephy - Monitoreo Ambiental Puerto Maldonado</h1>
+    <p>Sistema de monitoreo climático en tiempo real para Puerto Maldonado, Madre de Dios.</p>
+    <p><strong>Este sitio requiere JavaScript para funcionar correctamente.</strong></p>
+    <ul style="list-style: none; padding: 0;">
+      <li>📊 Dashboard de datos ambientales en tiempo real</li>
+      <li>🗺️ Mapa interactivo de sensores IoT</li>
+      <li>🏆 Ranking de zonas con mejor calidad ambiental</li>
+      <li>💡 Consejos según condiciones climáticas actuales</li>
+    </ul>
+  </div>
+</noscript>
+
+<div id="root"></div>
+<script type="module" src="./src/main.jsx"></script>
+</body>
 </html>
