@@ -11,6 +11,8 @@ import { EnvironmentalGauge } from "../components/EnvironmentalGauge.jsx";
 import EnvironmentalTabs from "../components/measurer/EnvironmentalTabs.jsx";
 import TipsCarousel from "../components/measurer/TipsCarousel.jsx";
 
+import SEOHelmet from '../components/SEOHelmet';
+
 const MeasurerPage = () => {
 
   const navigate = useNavigate();
@@ -75,52 +77,67 @@ const MeasurerPage = () => {
     sensorData: {temperature: 0, humidity: 0, airQuality: 0},
   };
 
+  // 🛠️ Definición del SEO Dinámico
+  const seoTitle = `Dashboard - ${currentData.locationName}`;
+  const seoDescription = `Monitoreo en tiempo real de ${currentData.locationName}. Temperatura: ${currentData.sensorData.temperature}°C, Humedad: ${currentData.sensorData.humidity}%, Calidad del aire en tiempo real.`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-emerald-900">
-      <MeasurerHeader {...{ locations, currentLocation, setCurrentLocation }} />
+    <>
+      <SEOHelmet
+        // Usamos las variables seguras definidas arriba
+        title={seoTitle}
+        description={seoDescription}
+        keywords="dashboard ambiental, temperatura puerto maldonado, sensor IoT, monitoreo climático"
+        canonical="/medidor"
+        ogImage="/og-dashboard.jpg"
+      />
 
-      {/* Mostrar advertencia si hay error pero sí hay datos */}
-      {error && dashboardData && (
-        <div className="max-w-6xl mx-auto px-4 pt-4">
-          <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-200 px-4 py-3 rounded-lg">
-            <strong>⚠️ Advertencia:</strong> {error}
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-emerald-900">
+        <MeasurerHeader {...{ locations, currentLocation, setCurrentLocation }} />
+
+        {/* Mostrar advertencia si hay error pero sí hay datos */}
+        {error && dashboardData && (
+          <div className="max-w-6xl mx-auto px-4 pt-4">
+            <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-200 px-4 py-3 rounded-lg">
+              <strong>⚠️ Advertencia:</strong> {error}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <main className="max-w-6xl mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-          <div className="lg:col-span-1 h-full flex">
-            <div className="w-full h-full">
-              <EnvironmentalGauge data={currentData.sensorData} />
+        <main className="max-w-6xl mx-auto p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            <div className="lg:col-span-1 h-full flex">
+              <div className="w-full h-full">
+                <EnvironmentalGauge data={currentData.sensorData} />
+              </div>
+            </div>
+
+            <div className="lg:col-span-1 h-full flex">
+              <div className="w-full h-full">
+                <DataPanel currentData={currentData} />
+              </div>
+            </div>
+
+            <div className="lg:col-span-1 h-full flex">
+              <div className="w-full h-full">
+                <MeasurerImage currentData={currentData} />
+              </div>
             </div>
           </div>
 
-          <div className="lg:col-span-1 h-full flex">
-            <div className="w-full h-full">
-              <DataPanel currentData={currentData} />
-            </div>
+          <div className="mt-6">
+            <EnvironmentalTabs sensorData={currentData.sensorData} />
           </div>
 
-          <div className="lg:col-span-1 h-full flex">
-            <div className="w-full h-full">
-              <MeasurerImage currentData={currentData} />
-            </div>
+          <div className="mt-6 mb-20">
+            <TipsCarousel sensorData={currentData.sensorData} />
           </div>
-        </div>
 
-        <div className="mt-6">
-          <EnvironmentalTabs sensorData={currentData.sensorData} />
-        </div>
+          <MeasurerButtons navigate={navigate} />
+        </main>
+      </div>
+    </>
 
-        <div className="mt-6 mb-20">
-          <TipsCarousel sensorData={currentData.sensorData} />
-        </div>
-
-        <MeasurerButtons navigate={navigate} />
-      </main>
-    </div>
   );
 };
 

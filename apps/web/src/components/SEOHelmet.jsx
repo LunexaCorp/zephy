@@ -13,7 +13,7 @@ const SEOHelmet = ({
                      ogType = 'website',
                      schema
                    }) => {
-  const baseUrl = 'https://zephy.app';
+  const baseUrl = 'https://zephy-mdd.vercel.app';
   const fullUrl = canonical ? `${baseUrl}${canonical}` : baseUrl;
   const fullTitle = title ? `${title} | Zephy` : 'Zephy - Monitoreo Ambiental en Tiempo Real | Puerto Maldonado';
 
