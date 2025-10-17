@@ -1,9 +1,151 @@
 import { motion } from "framer-motion";
-import { Activity, MapPin, ChevronDown } from "lucide-react";
+import { Activity, MapPin, ChevronDown, Wifi, WifiOff, Clock, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 
-const MeasurerHeader = ({ locations, currentLocation, setCurrentLocation }) => {
+const MeasurerHeader = ({ locations, currentLocation, setCurrentLocation, lastUpdate }) => {
   // Obtener nombre de la ubicación actual
   const currentLocationName = locations.find(loc => loc._id === currentLocation)?.name;
+
+  // Estado de conexión basado en la última actualización
+  const [connectionStatus, setConnectionStatus] = useState({
+    status: 'active', // 'active', 'delayed', 'inactive', 'disconnected'
+    timeAgo: '',
+    color: 'emerald',
+    icon: Wifi
+  });
+
+  useEffect(() => {
+    if (!lastUpdate) {
+      setConnectionStatus({
+        status: 'disconnected',
+        timeAgo: 'Sin datos',
+        color: 'gray',
+        icon: WifiOff
+      });
+      return;
+    }
+
+    const calculateStatus = () => {
+      const now = new Date();
+      const lastUpdateDate = new Date(lastUpdate);
+      const diffMinutes = Math.floor((now - lastUpdateDate) / (1000 * 60));
+      const diffHours = Math.floor(diffMinutes / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      // Formatear tiempo relativo
+      let timeAgo = '';
+      if (diffMinutes < 1) {
+        timeAgo = 'Justo ahora';
+      } else if (diffMinutes < 60) {
+        timeAgo = `Hace ${diffMinutes} min`;
+      } else if (diffHours < 24) {
+        timeAgo = `Hace ${diffHours}h`;
+      } else {
+        timeAgo = `Hace ${diffDays}d`;
+      }
+
+      // Determinar estado
+      if (diffMinutes < 5) {
+        return {
+          status: 'active',
+          timeAgo,
+          color: 'emerald',
+          icon: Wifi
+        };
+      } else if (diffMinutes < 30) {
+        return {
+          status: 'delayed',
+          timeAgo,
+          color: 'amber',
+          icon: Clock
+        };
+      } else if (diffMinutes < 120) {
+        return {
+          status: 'inactive',
+          timeAgo,
+          color: 'orange',
+          icon: AlertCircle
+        };
+      } else {
+        return {
+          status: 'disconnected',
+          timeAgo,
+          color: 'red',
+          icon: WifiOff
+        };
+      }
+    };
+
+    setConnectionStatus(calculateStatus());
+
+    // Actualizar cada minuto
+    const interval = setInterval(() => {
+      setConnectionStatus(calculateStatus());
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [lastUpdate]);
+
+  // Formatear hora en formato 12 horas con AM/PM
+  const formatTime12h = (date) => {
+    if (!date) return '--:--';
+    const d = new Date(date);
+    let hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes} ${ampm}`;
+  };
+
+  // Configuración de colores según estado
+  const statusColors = {
+    emerald: {
+      bg: 'bg-emerald-500/20',
+      border: 'border-emerald-400/40',
+      text: 'text-emerald-400',
+      shadow: 'shadow-emerald-500/20',
+      glow: 'group-hover:shadow-emerald-400/30'
+    },
+    amber: {
+      bg: 'bg-amber-500/20',
+      border: 'border-amber-400/40',
+      text: 'text-amber-400',
+      shadow: 'shadow-amber-500/20',
+      glow: 'group-hover:shadow-amber-400/30'
+    },
+    orange: {
+      bg: 'bg-orange-500/20',
+      border: 'border-orange-400/40',
+      text: 'text-orange-400',
+      shadow: 'shadow-orange-500/20',
+      glow: 'group-hover:shadow-orange-400/30'
+    },
+    red: {
+      bg: 'bg-red-500/20',
+      border: 'border-red-400/40',
+      text: 'text-red-400',
+      shadow: 'shadow-red-500/20',
+      glow: 'group-hover:shadow-red-400/30'
+    },
+    gray: {
+      bg: 'bg-gray-500/20',
+      border: 'border-gray-400/40',
+      text: 'text-gray-400',
+      shadow: 'shadow-gray-500/20',
+      glow: 'group-hover:shadow-gray-400/30'
+    }
+  };
+
+  const colors = statusColors[connectionStatus.color];
+  const StatusIcon = connectionStatus.icon;
+
+  // Etiquetas de estado
+  const statusLabels = {
+    active: 'Activo',
+    delayed: 'Retrasado',
+    inactive: 'Inactivo',
+    disconnected: 'Desconectado'
+  };
 
   return (
     <motion.header
@@ -71,60 +213,120 @@ const MeasurerHeader = ({ locations, currentLocation, setCurrentLocation }) => {
             </motion.p>
           </motion.div>
 
-          {/* Selector de ubicación moderno */}
+          {/* Contenedor derecho: Badge de estado + Selector */}
           <motion.div
             initial={{ x: 30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="w-full lg:w-80"
+            className="flex flex-col items-center lg:items-end gap-3 w-full lg:w-auto"
           >
-            <div className="relative group">
-              {/* Label flotante */}
-              <motion.label
-                initial={{ y: -5, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="absolute -top-2.5 left-3 px-2 bg-gray-900 text-xs font-medium text-emerald-400 z-10"
-              >
-                Ubicación
-              </motion.label>
+            {/* Selector de ubicación moderno */}
+            <div className="w-full lg:w-80">
+              <div className="relative group">
+                {/* Label flotante */}
+                <motion.label
+                  initial={{ y: -5, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="absolute -top-2.5 left-3 px-2 bg-gray-900 text-xs font-medium text-emerald-400 z-10"
+                >
+                  Ubicación
+                </motion.label>
 
-              {/* Icono de ubicación */}
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                <MapPin className="w-5 h-5 text-emerald-400/70 group-focus-within:text-emerald-400 transition-colors" />
-              </div>
+                {/* Icono de ubicación */}
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  <MapPin className="w-5 h-5 text-emerald-400/70 group-focus-within:text-emerald-400 transition-colors" />
+                </div>
 
-              {/* Select personalizado */}
-              <select
-                value={currentLocation || ""}
-                onChange={(e) => setCurrentLocation(e.target.value)}
-                className="w-full h-14 pl-12 pr-10 rounded-xl bg-gray-800/80 backdrop-blur-sm text-white border-2 border-emerald-400/30
-                  hover:border-emerald-400/50 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20
-                  transition-all duration-300 outline-none appearance-none cursor-pointer
-                  shadow-lg shadow-black/20 group-hover:shadow-emerald-400/10"
-              >
-                <option value="" disabled>
-                  Selecciona una ubicación
-                </option>
-                {locations.map((loc) => (
-                  <option key={loc._id} value={loc._id} className="bg-gray-900">
-                    {loc.name}
+                {/* Select personalizado */}
+                <select
+                  value={currentLocation || ""}
+                  onChange={(e) => setCurrentLocation(e.target.value)}
+                  className="w-full h-14 pl-12 pr-10 rounded-xl bg-gray-800/80 backdrop-blur-sm text-white border-2 border-emerald-400/30
+                    hover:border-emerald-400/50 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20
+                    transition-all duration-300 outline-none appearance-none cursor-pointer
+                    shadow-lg shadow-black/20 group-hover:shadow-emerald-400/10"
+                >
+                  <option value="" disabled>
+                    Selecciona una ubicación
                   </option>
-                ))}
-              </select>
+                  {locations.map((loc) => (
+                    <option key={loc._id} value={loc._id} className="bg-gray-900">
+                      {loc.name}
+                    </option>
+                  ))}
+                </select>
 
-              {/* Icono de chevron animado */}
-              <motion.div
-                animate={{ y: [0, 3, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
-              >
-                <ChevronDown className="w-5 h-5 text-emerald-400/70" />
-              </motion.div>
+                {/* Icono de chevron animado */}
+                <motion.div
+                  animate={{ y: [0, 3, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                >
+                  <ChevronDown className="w-5 h-5 text-emerald-400/70" />
+                </motion.div>
 
-              {/* Efecto de brillo en hover */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-400/0 via-emerald-400/5 to-emerald-400/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                {/* Efecto de brillo en hover */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-400/0 via-emerald-400/5 to-emerald-400/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              </div>
             </div>
+
+            {/* Badge de estado de conexión */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="group"
+            >
+              <div className={`flex items-center gap-3 px-4 py-2.5 rounded-xl ${colors.bg} backdrop-blur-sm border-2 ${colors.border} ${colors.shadow} hover:${colors.glow} transition-all duration-300`}>
+                {/* Icono animado */}
+                <motion.div
+                  animate={connectionStatus.status === 'active' ? {
+                    scale: [1, 1.1, 1],
+                  } : {}}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                  }}
+                >
+                  <StatusIcon className={`w-5 h-5 ${colors.text}`} strokeWidth={2.5} />
+                </motion.div>
+
+                {/* Información de estado */}
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${colors.text}`}>
+                      {statusLabels[connectionStatus.status]}
+                    </span>
+                    <span className="text-gray-400 text-xs">•</span>
+                    <span className="text-gray-300 text-xs font-medium">
+                      {connectionStatus.timeAgo}
+                    </span>
+                  </div>
+                  {lastUpdate && (
+                    <span className="text-xs text-gray-500">
+                      {formatTime12h(lastUpdate)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Indicador de pulso para estado activo */}
+                {connectionStatus.status === 'active' && (
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.5, 1],
+                      opacity: [1, 0, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                    }}
+                    className={`w-2 h-2 rounded-full ${colors.text.replace('text-', 'bg-')}`}
+                  />
+                )}
+              </div>
+            </motion.div>
 
           </motion.div>
         </div>
@@ -140,5 +342,4 @@ const MeasurerHeader = ({ locations, currentLocation, setCurrentLocation }) => {
     </motion.header>
   );
 };
-
 export default MeasurerHeader;

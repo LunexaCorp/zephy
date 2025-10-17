@@ -98,7 +98,12 @@ const MeasurerPage = () => {
       />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-emerald-900">
-        <MeasurerHeader {...{ locations, currentLocation, setCurrentLocation }} />
+        <MeasurerHeader
+          locations={locations}
+          currentLocation={currentLocation}
+          setCurrentLocation={setCurrentLocation}
+          lastUpdate={currentData?.sensorData?.lastUpdate}
+        />
 
         {/* Mostrar advertencia si hay error pero sí hay datos */}
         {error && dashboardData && (
