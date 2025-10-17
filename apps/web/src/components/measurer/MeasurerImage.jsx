@@ -107,78 +107,87 @@ const MeasurerImage = ({ currentData }) => {
       {isFullscreen && hasImage && (
         <div
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm
-                     flex items-center justify-center p-4
+                     flex flex-col overflow-y-auto
                      animate-in fade-in duration-300"
           onClick={closeFullscreen}
         >
-          {/* Botón cerrar */}
-          <button
-            onClick={closeFullscreen}
-            className="absolute top-6 right-6 bg-white/10 hover:bg-white/20
-                       text-white p-3 rounded-full shadow-2xl
-                       transform hover:scale-110 hover:rotate-90 active:scale-95
-                       transition-all duration-300 z-10"
-            title="Cerrar"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
-          {/* Información superior */}
-          {currentData.locationName && (
-            <div className="absolute top-6 left-6 bg-gradient-to-r from-emerald-600 to-emerald-700
-                            text-white px-6 py-3 rounded-xl shadow-2xl z-10
-                            animate-in slide-in-from-left duration-500">
-              <p className="text-lg font-bold">{currentData.locationName}</p>
-              {hasCoordinates && (
-                <p className="text-sm text-emerald-100 mt-1">
-                  📍 {Number(currentData.coordinates.latitude).toFixed(4)}, {Number(currentData.coordinates.longitude).toFixed(4)}
-                </p>
+          {/* Header fijo con botón cerrar e info */}
+          <div className="sticky top-0 z-20 bg-black/50 backdrop-blur-md border-b border-white/10">
+            <div className="flex items-center justify-between p-4">
+              {/* Información de ubicación */}
+              {currentData.locationName && (
+                <div className="bg-gradient-to-r from-emerald-600 to-emerald-700
+                                text-white px-4 py-2 rounded-lg shadow-lg
+                                max-w-[70%]">
+                  <p className="text-sm md:text-lg font-bold truncate">
+                    {currentData.locationName}
+                  </p>
+                  {hasCoordinates && (
+                    <p className="text-xs md:text-sm text-emerald-100 mt-0.5 truncate">
+                      📍 {Number(currentData.coordinates.latitude).toFixed(4)}, {Number(currentData.coordinates.longitude).toFixed(4)}
+                    </p>
+                  )}
+                </div>
               )}
-            </div>
-          )}
 
-          {/* Imagen en pantalla completa */}
-          <div
-            className="relative max-w-7xl max-h-[90vh] w-full
-                       animate-in zoom-in duration-500"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={currentData.locationImg}
-              alt={currentData.locationName || 'Ubicación'}
-              className="w-full h-full object-contain rounded-2xl shadow-2xl"
-            />
-
-            {/* Botón Maps en modal */}
-            {hasCoordinates && (
+              {/* Botón cerrar */}
               <button
-                onClick={handleOpenMaps}
-                className="absolute bottom-6 right-6
-                           bg-emerald-600 hover:bg-emerald-700
-                           text-white px-6 py-3 rounded-xl shadow-2xl
-                           flex items-center gap-2
-                           transform hover:scale-105 active:scale-95
-                           transition-all duration-200
-                           animate-in slide-in-from-bottom duration-500"
+                onClick={closeFullscreen}
+                className="bg-white/10 hover:bg-white/20
+                           text-white p-2.5 rounded-full shadow-2xl
+                           transform hover:scale-110 hover:rotate-90 active:scale-95
+                           transition-all duration-300 flex-shrink-0 ml-2"
+                title="Cerrar"
               >
                 <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
+                  className="w-5 h-5 md:w-6 md:h-6"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                <span className="font-semibold">Ver en Google Maps</span>
               </button>
-            )}
+            </div>
+          </div>
+
+          {/* Contenedor de imagen con scroll */}
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div
+              className="relative w-full max-w-7xl
+                         animate-in zoom-in duration-500"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={currentData.locationImg}
+                alt={currentData.locationName || 'Ubicación'}
+                className="w-full h-auto object-contain rounded-lg md:rounded-2xl shadow-2xl"
+              />
+
+              {/* Botón Maps flotante */}
+              {hasCoordinates && (
+                <button
+                  onClick={handleOpenMaps}
+                  className="absolute bottom-4 right-4
+                             bg-emerald-600 hover:bg-emerald-700
+                             text-white p-3 md:px-6 md:py-3 rounded-lg md:rounded-xl shadow-2xl
+                             flex items-center gap-2
+                             transform hover:scale-105 active:scale-95
+                             transition-all duration-200"
+                >
+                  <svg
+                    className="w-4 h-4 md:w-5 md:h-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
+                  <span className="hidden md:inline font-semibold">Ver en Google Maps</span>
+                  <span className="md:hidden text-xs font-semibold">Maps</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

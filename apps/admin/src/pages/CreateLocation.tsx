@@ -14,12 +14,12 @@ export default function CreateLocationPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [createdLocationId, setCreatedLocationId] = useState<string | null>(null);
 
-  // ✅ Usa el hook completo
+  // Usa el hook completo
   const {
     imagePreview,
     uploadingImage,
     uploadError,
-    handleImageChange, // ✅ Usa esta función del hook
+    handleImageChange, // Usa esta función del hook
     uploadToCloudinary,
     clearImage,
   } = useImageUpload();
