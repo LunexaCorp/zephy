@@ -161,3 +161,32 @@ export const getLocationById = async (id: string) => {
     return { success: false, error: err.response?.data?.error || err.message };
   }
 };
+
+// GET: Obtener resumen de estadísticas de todas las ubicaciones
+export const getStatisticsSummaries = async () => {
+  try {
+    const response = await api.get("/statistics/summaries");
+    return response.data.map((summary: any) => ({
+      ...summary,
+      locationId: summary.locationId || summary._id,
+    }));
+  } catch (error) {
+    console.error("Error fetching statistics summaries:", error);
+    return [];
+  }
+};
+
+// GET: Obtener estadísticas detalladas de una ubicación
+export const getLocationStatistics = async (locationId?: string, limit: number = 50) => {
+  try {
+    const endpoint = locationId
+      ? `/statistics/location/${locationId}?limit=${limit}`
+      : `/statistics/summaries`;
+
+    const response = await api.get(endpoint);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching location statistics:", error);
+    return locationId ? null : [];
+  }
+};

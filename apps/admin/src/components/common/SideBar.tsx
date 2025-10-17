@@ -4,22 +4,21 @@ import {
   HomeIcon,
   MapPinIcon,
   CpuChipIcon,
-  UserGroupIcon,
-  Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   Bars3Icon,
-  XMarkIcon,
+  XMarkIcon
 } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import {Sigma} from "lucide-react";
+import { Link, useLocation} from "react-router-dom";
+import { Sigma , BarChart3 } from "lucide-react";
 
 const menuItems = [
   { name: "Dashboard", icon: HomeIcon, path: "/" },
-  { name: "Dispositivos", icon: CpuChipIcon, path: "/devices" },
   { name: "Localidades", icon: MapPinIcon, path: "/locations" },
+  { name: "Dispositivos", icon: CpuChipIcon, path: "/devices" },
+  { name: "Estadísticas", icon:BarChart3, path: "/statistics"},
   { name: "Configuración", icon: Sigma, path: "/environmental-config" },
 ];
 

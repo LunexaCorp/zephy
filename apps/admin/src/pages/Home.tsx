@@ -1,4 +1,4 @@
-import {MapPin, Cpu, Sigma, Settings} from "lucide-react";
+import {MapPin, Cpu, Sigma, Settings, BarChart3, AlertTriangle} from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -28,7 +28,7 @@ export default function Home() {
             </p>
           </motion.div>
 
-          {/* Tarjetas */}
+          {/* Primera fila */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mt-8">
             {/* Locations */}
             <motion.div
@@ -76,27 +76,51 @@ export default function Home() {
           </div>
 
           {/* Segunda fila */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="w-full max-w-sm mt-4"
-          >
-            <a href="/environmental-config">
-              <div className="group relative overflow-hidden rounded-2xl bg-emerald-50 border border-emerald-200 p-6 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
-                <div className="absolute inset-0 bg-emerald-100/0 group-hover:bg-emerald-100/50 transition-all duration-300" />
-                <div className="relative z-10 flex flex-col items-center gap-4">
-                  <Sigma className="w-12 h-12 text-emerald-600 group-hover:scale-110 transition-transform duration-300" />
-                  <h3 className="text-2xl font-semibold text-gray-900">
-                    Configuración Ambiental
-                  </h3>
-                  <p className="text-gray-600 text-center text-sm">
-                    Define rangos óptimos y pesos por ubicación
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+            {/* Environmental Config */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <a href="/environmental-config">
+                <div className="group relative overflow-hidden rounded-2xl bg-emerald-50 border border-emerald-200 p-6 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                  <div className="absolute inset-0 bg-emerald-100/0 group-hover:bg-emerald-100/50 transition-all duration-300" />
+                  <div className="relative z-10 flex flex-col items-center gap-4">
+                    <Sigma className="w-12 h-12 text-emerald-600 group-hover:scale-110 transition-transform duration-300" />
+                    <h3 className="text-2xl font-semibold text-gray-900">
+                      Configuración Ambiental
+                    </h3>
+                    <p className="text-gray-600 text-center text-sm">
+                      Define rangos óptimos y pesos por ubicación
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </a>
-          </motion.div>
+              </a>
+            </motion.div>
+
+            {/* Statistics */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <a href="/statistics">
+                <div className="group relative overflow-hidden rounded-2xl bg-amber-50 border border-amber-200 p-6 hover:border-amber-400 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                  <div className="absolute inset-0 bg-amber-100/0 group-hover:bg-amber-100/50 transition-all duration-300" />
+                  <div className="relative z-10 flex flex-col items-center gap-4">
+                    <BarChart3 className="w-12 h-12 text-amber-600 group-hover:scale-110 transition-transform duration-300" />
+                    <h3 className="text-2xl font-semibold text-gray-900">
+                      Estadísticas
+                    </h3>
+                    <p className="text-gray-600 text-center text-sm">
+                      Visualiza datos y tendencias ambientales
+                    </p>
+                  </div>
+                </div>
+              </a>
+            </motion.div>
+          </div>
         </div>
       </main>
     </div>

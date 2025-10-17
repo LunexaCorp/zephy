@@ -8,6 +8,8 @@ import DevicesPage from "./pages/Devices.tsx";
 import CreateLocationPage from "./pages/CreateLocation.tsx";
 import EditLocationPage from "./pages/EditLocationPage.tsx";
 import EnvironmentalConfig from "./pages/EnvironmentalConfig.tsx";
+import Statistics from "./pages/Statistics.tsx";
+import StatisticsDetail from "./components/statistics/StatisticsDetail.tsx";
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
               <Route path="/locations/new" element={<CreateLocationPage />} />
               <Route path="/locations/edit/:id" element={<EditLocationPage />} />
               <Route path="/environmental-config" element={<EnvironmentalConfig />} />
+              <Route path="/statistics" element={<Statistics />} />
+              <Route path="/statistics/:locationId" element={<StatisticsDetail />} />
             </Routes>
           </div>
         </main>
