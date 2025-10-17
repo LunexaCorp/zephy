@@ -11,6 +11,9 @@ import dashboardRoutes from "./routes/dashboard.router.js";
 import locationsRouter from "./routes/locations.router.js";
 import sensorReadingRouter from "./routes/sensorReading.router.js";
 import mqttRouter from "./routes/mqtt.router.js";
+import statisticsRoutes from './routes/statistics.routes.js';
+
+
 
 dotenv.config();
 const app = express();
@@ -29,6 +32,7 @@ apiRouter.use("/locations", locationsRouter);
 apiRouter.use("/readings", sensorReadingRouter);
 apiRouter.use("/upload", uploadRoutes);
 apiRouter.use("/mqtt", mqttRouter);
+apiRouter.use("/statistics", statisticsRoutes);
 app.use("/api/v1", apiRouter);
 
 
